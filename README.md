@@ -12,6 +12,7 @@
 - [Smart contract](#smart-contract)
 - [API REST](#api-rest)
 - [Vérification publique](#vérification-publique)
+- [Capture mobile via navigateur](#capture-mobile-via-navigateur)
 - [Déploiement Polygon](#déploiement-polygon)
 
 ## Architecture
@@ -20,6 +21,7 @@
 ├── backend/              # API Node.js + Express + SQLite
 ├── app_flutter/          # App Flutter (mobile + web)
 ├── contracts/            # Smart contract Solidity
+├── public/capture.html   # Capture mobile + certification immédiate
 ├── public/verify.html    # Page publique de vérification
 ├── README.md
 └── .env.example
@@ -92,6 +94,16 @@ Réponse :
 
 ## Vérification publique
 La page `public/verify.html` consomme `GET /api/verify/:id` et affiche hash, date UTC, QR code et lien PolygonScan.
+
+## Capture mobile via navigateur
+Ouvrir directement la caméra d’un smartphone (Safari/Chrome) :
+
+1. Démarrer le backend (`npm start`) et s’assurer qu’il est accessible depuis le téléphone (même réseau ou URL publique).
+2. Ouvrir `http://<serveur>:4000/public/capture.html` dans le navigateur du mobile.
+3. Appuyer sur **Prendre une photo** (l’input utilise `accept="image/*"` et `capture="environment"`).
+4. La photo est immédiatement envoyée en `multipart/form-data` vers `POST /api/certify`.
+5. Le proofId, hash et timestamp s’affichent, avec un bouton **Ouvrir la certification** pointant vers `public/verify.html?id=<proofId>`.
+6. Si une clé API est configurée, la saisir dans le champ dédié avant la capture.
 
 ## Déploiement Polygon
 1. Déployer `EvidenciaProofs.sol` sur Mumbai.
