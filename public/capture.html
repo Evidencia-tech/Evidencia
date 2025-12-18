@@ -226,10 +226,11 @@
   // ✅ Le bon event
   photoInput.addEventListener('change', handleFileSelection);
 
-  // ✅ Bouton capture
-  captureButton.addEventListener('click', () => {
-    resetInput();
-    setStatus('Ouverture de la caméra...', undefined);
+captureButton.addEventListener('click', () => {
+  alert('OK clic');
+  resetInput();
+  setStatus('Ouverture de la caméra...', undefined);
+  photoInput.click();
   });
 </script>
 </body>
