@@ -132,6 +132,7 @@
 
 <script>
   alert("CAPTURE: JS chargé");
+
   const photoInput = document.getElementById('photoInput');
   const captureButton = document.getElementById('captureButton');
   const statusBox = document.getElementById('statusBox');
@@ -144,7 +145,9 @@
   const previewWrapper = document.getElementById('previewWrapper');
   const previewImage = document.getElementById('previewImage');
   const apiKeyInput = document.getElementById('apiKey');
-captureButton.disabled = false;
+
+  captureButton.disabled = false;
+
   function setStatus(message, type) {
     statusBox.textContent = message;
     statusBox.classList.remove('success', 'error');
@@ -221,17 +224,16 @@ captureButton.disabled = false;
     previewWrapper.style.display = 'block';
     uploadFile(file);
   }
-    photoInput.addEventListener(evt, handleFileSelection);
+
+  // ✅ Le bon event
+  photoInput.addEventListener('change', handleFileSelection);
+
+  // ✅ Bouton capture
+  captureButton.addEventListener('click', () => {
+    resetInput();
+    setStatus('Ouverture de la caméra...', undefined);
+    setTimeout(() => photoInput.click(), 50);
   });
-
-captureButton.addEventListener('click', () => {
-  captureButton.disabled = false;      // sécurité
-  resetInput();                        // important pour que "change" se déclenche même si on reprend une photo
-  setStatus('Ouverture de la caméra...', undefined);
-
-  // petit délai aide certains iPhone à bien prendre le reset avant l'ouverture
-  setTimeout(() => photoInput.click(), 50);
-});
 </script>
 </body>
 </html>
