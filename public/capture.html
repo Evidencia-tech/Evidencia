@@ -84,26 +84,16 @@
     }
     .btn:disabled{ opacity:.6; cursor:not-allowed; }
 .file-wrap{
-  position:relative;
   width:100%;
 }
-
 .file-input{
-  position:absolute;
+  position:fixed;
+  left:-9999px;
   top:0;
-  left:0;
-  width:100%;
-  height:100%;
+  width:1px;
+  height:1px;
   opacity:0;
-  cursor:pointer;
-  z-index:2;
 }
-#captureButton{
-  position:relative;
-  z-index:1;
-  pointer-events:none;
-}
-
     .status{
       margin:12px 0;
       font-size:14px;
@@ -210,7 +200,11 @@
     const openProofBtn = document.getElementById('openProof');
     const shareProofBtn = document.getElementById('shareProof');
     const captureButton = document.getElementById('captureButton');
-    captureButton.addEventListener('click', () => photoInput.click());
+   captureButton.addEventListener('click', () => {
+  photoInput.value = '';
+  setStatus(null, 'Ouverture de la caméra…');
+  photoInput.click();
+});
     const apiKeyInput = document.getElementById('apiKey');
     const previewWrapper = document.getElementById('previewWrapper');
     const previewImage = document.getElementById('previewImage');
