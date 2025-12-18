@@ -7,78 +7,100 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
   <style>
-body {
-  font-family: 'Inter', sans-serif;
-  background: #F3EBDD;
-  color: #fff;
-  margin: 0;
-.brand{
-  width:100%;
-  display:flex;
-  justify-content:center;
-  margin:24px 0 18px;
-}
+    body{
+      font-family:'Inter',sans-serif;
+      background:#F3EBDD;
+      color:#fff;
+      margin:0;
+    }
 
-.brand-logo{
-  display:block;
-  width:320px;
-  max-width:60vw;
-  height:auto;
-  opacity:.95;
-}
-  .page {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+    .page{
+      width:100%;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:24px 0 48px;
+      box-sizing:border-box;
+    }
 
-    .card { background: #111827; border: 1px solid #1f2937; padding: 24px; border-radius: 16px; max-width: 480px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-    h1 { margin-top: 0; color: #60a5fa; }
-    .row { margin: 12px 0; }
-    .label { color: #9ca3af; font-size: 12px; text-transform: uppercase; }
-    .value { word-break: break-all; }
-    button { background: #2563eb; color: #fff; border: none; padding: 12px 16px; border-radius: 12px; cursor: pointer; width: 100%; font-weight: 600; }
-    button:hover { background: #1e40af; }
-    .qr { text-align: center; margin: 12px 0; }
-    footer { text-align: center; font-size: 12px; color: #6b7280; margin-top: 16px; }
+    .brand{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      margin:24px 0 18px;
+    }
+
+    .brand-logo{
+      display:block;
+      width:320px;
+      max-width:60vw;
+      height:auto;
+      opacity:.95;
+    }
+
+    .card{
+      background:#111827;
+      border:1px solid #1f2937;
+      padding:24px;
+      border-radius:16px;
+      max-width:480px;
+      width:90%;
+      box-shadow:0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    h1{ margin-top:0; color:#60a5fa; }
+    .row{ margin:12px 0; }
+    .label{ color:#9ca3af; font-size:12px; text-transform:uppercase; }
+    .value{ word-break:break-all; }
+    button{ background:#2563eb; color:#fff; border:none; padding:12px 16px; border-radius:12px; cursor:pointer; width:100%; font-weight:600; }
+    button:hover{ background:#1e40af; }
+    .qr{ text-align:center; margin:12px 0; }
+    footer{ text-align:center; font-size:12px; color:#6b7280; margin-top:16px; }
   </style>
 </head>
+
 <body>
-    </div>
+  <div class="page">
     <div class="brand">
-  <img src="/public/Logo.png" alt="Évidencia" class="brand-logo">
-</div>
-<body>
-  <div class="card">
-    <h1>Certificat</h1>
-    <div class="row"><div class="label">Proof ID</div><div id="pid" class="value">-</div></div>
-    <div class="row"><div class="label">SHA-256 Hash</div><div id="hash" class="value">-</div></div>
-    <div class="row"><div class="label">Timestamp (UTC)</div><div id="time" class="value">-</div></div>
-    <div class="row"><div class="label">Transaction</div><div id="tx" class="value">-</div></div>
-    <div class="qr"><img id="qr" alt="QR code" style="width:180px;height:180px;" /></div>
-    <button id="viewTx" disabled>View on PolygonScan</button>
-    <footer>Certifié par Évidencia</footer>
+      <img src="/public/Logo.png" alt="Évidencia" class="brand-logo">
+    </div>
+
+    <div class="card">
+      <h1>Certificat</h1>
+
+      <div class="row"><div class="label">Proof ID</div><div id="pid" class="value">-</div></div>
+      <div class="row"><div class="label">SHA-256 Hash</div><div id="hash" class="value">-</div></div>
+      <div class="row"><div class="label">Timestamp (UTC)</div><div id="time" class="value">-</div></div>
+      <div class="row"><div class="label">Transaction</div><div id="tx" class="value">-</div></div>
+
+      <div class="qr"><img id="qr" alt="QR code" style="width:180px;height:180px;" /></div>
+
+      <button id="viewTx" disabled>View on PolygonScan</button>
+      <footer>Certifié par Évidencia</footer>
+    </div>
   </div>
+
   <script>
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const apiBase = window.location.origin;
+
     document.getElementById('pid').textContent = id || 'Missing id';
+
     async function load() {
       if (!id) return;
       const res = await fetch(`${apiBase}/api/verify/${id}`);
       if (!res.ok) return;
+
       const data = await res.json();
       document.getElementById('hash').textContent = data.hash;
       document.getElementById('time').textContent = new Date(data.timestamp * 1000).toISOString();
       document.getElementById('tx').textContent = data.txHash || 'N/A';
       if (data.qrUrl || data.qr) document.getElementById('qr').src = data.qrUrl || data.qr;
-      if (data.imageUrl) {
-        document.getElementById('proofImage').src = data.imageUrl;
-        document.getElementById('imageWrapper').style.display = 'block';
-      }
+
       const btn = document.getElementById('viewTx');
       if (data.txHash && data.txHash !== 'demo-no-chain') {
         btn.disabled = false;
