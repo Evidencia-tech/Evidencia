@@ -83,7 +83,14 @@
       text-align:center;
     }
     .btn:disabled{ opacity:.6; cursor:not-allowed; }
-    input[type="file"]{ display:none; }
+.file-wrap{ position:relative; width:100%; }
+.file-input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+}
+
 
     .status{
       margin:12px 0;
@@ -150,12 +157,11 @@
       <div class="card">
         <h1>Prendre une photo certifiée</h1>
         <p>Utilisez la caméra de votre smartphone pour capturer une preuve. Le hash est calculé et envoyé au serveur dès la prise de vue.</p>
-
-        <div class="actions">
-          <label class="btn" for="photoInput" id="captureButton">Prendre une photo</label>
-          <input id="photoInput" type="file" accept="image/*" capture="environment" />
-        </div>
-
+        
+<div class="actions file-wrap">
+  <button class="btn" type="button" id="captureButton">Prendre une photo</button>
+  <input class="file-input" id="photoInput" type="file" accept="image/*" capture="environment" />
+</div>
         <div style="margin-top:10px;">
           <div class="label" style="margin-bottom:6px;">Clé API (optionnel si définie)</div>
           <input id="apiKey" type="text" placeholder="x-api-key" />
@@ -192,6 +198,7 @@
     const openProofBtn = document.getElementById('openProof');
     const shareProofBtn = document.getElementById('shareProof');
     const captureButton = document.getElementById('captureButton');
+    captureButton.addEventListener('click', () => photoInput.click());
     const apiKeyInput = document.getElementById('apiKey');
     const previewWrapper = document.getElementById('previewWrapper');
     const previewImage = document.getElementById('previewImage');
