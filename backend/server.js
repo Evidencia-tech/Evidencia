@@ -37,8 +37,6 @@ const resolveImageUrl = (id) => {
 };
 
 const app = express();
-
-const app = express();
 app.set('trust proxy', 1);
 
 const upload = multer({
