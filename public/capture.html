@@ -33,6 +33,9 @@
     .label { font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; }
     .value { word-break: break-all; font-weight: 600; color: var(--text); }
     .link-btn { margin-top: 10px; background: #0ea5e9; }
+    .ghost-btn { margin-top: 8px; background: #e2e8f0; color: var(--text); }
+    .preview { display:none; margin-top: 12px; }
+    .preview img { width: 100%; border-radius: 12px; border: 1px solid var(--border); }
     footer { text-align: center; margin-top: 16px; font-size: 12px; color: var(--muted); }
   </style>
 </head>
@@ -50,11 +53,16 @@
         <input id="apiKey" type="text" placeholder="x-api-key" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); font-size:14px;" />
       </div>
       <div class="status" id="status">Aucune photo sélectionnée.</div>
+      <div class="preview" id="previewWrapper">
+        <div class="label">Aperçu</div>
+        <img id="previewImage" alt="Aperçu de la photo" />
+      </div>
       <div class="result" id="result" style="display:none;">
         <div class="row"><div class="label">Proof ID</div><div class="value" id="proofId">-</div></div>
         <div class="row"><div class="label">Hash SHA-256</div><div class="value" id="hash">-</div></div>
         <div class="row"><div class="label">Horodatage UTC</div><div class="value" id="timestamp">-</div></div>
         <button class="btn link-btn" id="openProof" disabled>Ouvrir la certification</button>
+        <button class="btn ghost-btn" id="shareProof" style="display:none;">Partager</button>
       </div>
       <footer>Certifié par Évidencia</footer>
     </div>
@@ -67,8 +75,11 @@
   const hashEl = document.getElementById('hash');
   const timestampEl = document.getElementById('timestamp');
   const openProofBtn = document.getElementById('openProof');
+  const shareProofBtn = document.getElementById('shareProof');
   const captureButton = document.getElementById('captureButton');
   const apiKeyInput = document.getElementById('apiKey');
+  const previewWrapper = document.getElementById('previewWrapper');
+  const previewImage = document.getElementById('previewImage');
 
   function setLoading(isLoading, message) {
     captureButton.textContent = isLoading ? 'Envoi en cours...' : 'Prendre une photo';
@@ -107,9 +118,28 @@
       hashEl.textContent = data.hash;
       timestampEl.textContent = new Date(data.timestamp * 1000).toISOString();
       openProofBtn.disabled = false;
-      openProofBtn.onclick = () => window.location.href = `/public/verify.html?id=${data.id}`;
+      openProofBtn.onclick = () => window.location.href = data.verifyUrl || `/public/verify.html?id=${data.id}`;
+      if (data.imageUrl) {
+        previewImage.src = data.imageUrl;
+        previewWrapper.style.display = 'block';
+      }
+      const verifyLink = data.verifyUrl || `/public/verify.html?id=${data.id}`;
+      shareProofBtn.style.display = 'block';
+      shareProofBtn.onclick = async () => {
+        if (navigator.share) {
+          try {
+            await navigator.share({ title: 'Preuve Évidencia', text: 'Photo certifiée', url: verifyLink });
+          } catch (err) {
+            console.warn('Share cancelled', err);
+          }
+        } else {
+          await navigator.clipboard.writeText(verifyLink);
+          alert('Lien copié dans le presse-papiers');
+        }
+      };
       resultEl.style.display = 'block';
       statusEl.textContent = 'Photo certifiée avec succès.';
+      setTimeout(() => window.location.href = verifyLink, 1200);
     } catch (error) {
       statusEl.textContent = error.message || 'Erreur lors de la certification';
       statusEl.classList.add('error');
@@ -122,6 +152,9 @@
     const file = photoInput.files && photoInput.files[0];
     if (file) {
       statusEl.textContent = 'Photo sélectionnée, envoi...';
+      const localUrl = URL.createObjectURL(file);
+      previewImage.src = localUrl;
+      previewWrapper.style.display = 'block';
       certify(file);
     }
   });

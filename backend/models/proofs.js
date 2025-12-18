@@ -3,7 +3,7 @@ import db from '../db/connection.js';
 export const insertProof = (record) =>
   new Promise((resolve, reject) => {
     const stmt = db.prepare(
-      'INSERT INTO proofs (id, hash, timestamp, filename, mimetype, txHash, uri, qr) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO proofs (id, hash, timestamp, filename, mimetype, txHash, uri, qr, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       (err) => {
         if (err) reject(err);
       }
@@ -17,6 +17,7 @@ export const insertProof = (record) =>
       record.txHash,
       record.uri,
       record.qr,
+      record.imageUrl,
       (err) => {
         if (err) reject(err);
         resolve(record);

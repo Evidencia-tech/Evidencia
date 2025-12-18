@@ -8,6 +8,8 @@ import { nanoid } from 'nanoid';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
+import fsPromises from 'fs/promises';
 
 import { insertProof, getProof, listProofs } from './models/proofs.js';
 import { sendToPolygon } from './utils/blockchain.js';
@@ -17,6 +19,24 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const proofsDir = path.join(__dirname, '../public/proofs');
+
+if (!fs.existsSync(proofsDir)) {
+  fs.mkdirSync(proofsDir, { recursive: true });
+}
+
+const resolveImageUrl = (id) => {
+  const candidates = ['.jpg', '.jpeg', '.png', '.gif'];
+  for (const ext of candidates) {
+    const candidatePath = path.join(proofsDir, `${id}${ext}`);
+    if (fs.existsSync(candidatePath)) {
+      return `/public/proofs/${id}${ext}`;
+    }
+  }
+  return null;
+};
+
+const app = express();
 
 const app = express();
 app.set('trust proxy', 1);
@@ -53,6 +73,24 @@ const handleCertification = async (req, res) => {
     const timestamp = Math.floor(Date.now() / 1000);
     const id = nanoid();
 
+    const isImage = req.file.mimetype?.startsWith('image/');
+    let imageUrl = null;
+    if (isImage) {
+      const extension = (() => {
+        if (!req.file.mimetype) return '.bin';
+        if (req.file.mimetype === 'image/jpeg' || req.file.mimetype === 'image/jpg') return '.jpg';
+        if (req.file.mimetype === 'image/png') return '.png';
+        if (req.file.mimetype === 'image/gif') return '.gif';
+        const extFromName = path.extname(req.file.originalname || '').trim();
+        return extFromName || '.bin';
+      })();
+
+      const storedFileName = `${id}${extension}`;
+      const storedPath = path.join(proofsDir, storedFileName);
+      await fsPromises.writeFile(storedPath, buffer);
+      imageUrl = `/public/proofs/${storedFileName}`;
+    }
+
     const verifyUrl = `${process.env.PUBLIC_BASE_URL || req.protocol + '://' + req.get('host')}/public/verify.html?id=${id}`;
     const qr = await generateQr(verifyUrl);
     const chainResult = await sendToPolygon({ hashHex, timestamp, uri: verifyUrl });
@@ -65,11 +103,12 @@ const handleCertification = async (req, res) => {
       mimetype: req.file.mimetype,
       txHash: chainResult.txHash,
       uri: verifyUrl,
-      qr
+      qr,
+      imageUrl
     };
 
     await insertProof(record);
-    res.json({ ...record, note: chainResult.note });
+    res.json({ ...record, note: chainResult.note, verifyUrl, imageUrl, qrUrl: qr });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Certification failed', error: error.message });
@@ -83,7 +122,11 @@ app.get('/api/verify/:id', async (req, res) => {
   try {
     const proof = await getProof(req.params.id);
     if (!proof) return res.status(404).json({ message: 'Proof not found' });
-    res.json(proof);
+    const verifyUrl =
+      proof.uri || `${req.protocol}://${req.get('host')}/public/verify.html?id=${proof.id}`;
+    const qrUrl = proof.qr || (await generateQr(verifyUrl));
+    const imageUrl = proof.imageUrl || resolveImageUrl(proof.id);
+    res.json({ ...proof, verifyUrl, qrUrl, imageUrl });
   } catch (error) {
     res.status(500).json({ message: 'Lookup failed', error: error.message });
   }

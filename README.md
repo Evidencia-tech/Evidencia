@@ -88,12 +88,14 @@ Réponse :
   "timestamp": 1710000000,
   "txHash": "0xTxHash",
   "uri": "https://votre-domaine/public/verify.html?id=abc123",
-  "qr": "data:image/png;base64,..."
+  "verifyUrl": "https://votre-domaine/public/verify.html?id=abc123",
+  "imageUrl": "/public/proofs/abc123.png",
+  "qrUrl": "data:image/png;base64,..."
 }
 ```
 
 ## Vérification publique
-La page `public/verify.html` consomme `GET /api/verify/:id` et affiche hash, date UTC, QR code et lien PolygonScan.
+La page `public/verify.html` consomme `GET /api/verify/:id` et affiche la photo certifiée, le hash, la date UTC, le QR code et le lien PolygonScan.
 
 ## Capture mobile via navigateur
 Ouvrir directement la caméra d’un smartphone (Safari/Chrome) :
@@ -102,8 +104,9 @@ Ouvrir directement la caméra d’un smartphone (Safari/Chrome) :
 2. Ouvrir `http://<serveur>:4000/public/capture.html` dans le navigateur du mobile.
 3. Appuyer sur **Prendre une photo** (l’input utilise `accept="image/*"` et `capture="environment"`).
 4. La photo est immédiatement envoyée en `multipart/form-data` vers `POST /api/certify`.
-5. Le proofId, hash et timestamp s’affichent, avec un bouton **Ouvrir la certification** pointant vers `public/verify.html?id=<proofId>`.
+5. Le proofId, hash et timestamp s’affichent avec un aperçu de la photo certifiée, un bouton **Ouvrir la certification** et un bouton **Partager** (lien ou share mobile). Redirection automatique vers la page de preuve après quelques secondes.
 6. Si une clé API est configurée, la saisir dans le champ dédié avant la capture.
+7. L’image est stockée dans `public/proofs/<id>.<ext>` et servie publiquement pour l’affichage/QR.
 
 ## Déploiement Polygon
 1. Déployer `EvidenciaProofs.sol` sur Mumbai.
@@ -111,6 +114,6 @@ Ouvrir directement la caméra d’un smartphone (Safari/Chrome) :
 3. Démarrer le backend. Chaque certification appellera `registerProof` et retournera le `txHash` (visible sur PolygonScan).
 
 ## Sécurité
-- Seul le hash est stocké, jamais le fichier brut.
+- Les photos certifiées capturées via le navigateur sont sauvegardées dans `public/proofs` pour affichage et partage de la preuve.
 - Limite de taille 10 Mo, helmet + rate limit activés.
 - Clé API optionnelle via `x-api-key` pour restreindre les appels.
