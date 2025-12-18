@@ -51,6 +51,11 @@ app.use(cors());
 app.use(express.json());
 app.use('/public', express.static(path.join(__dirname, '../public')));
 
+// Simple redirect for convenience when opening the root URL
+app.get('/', (_req, res) => {
+  res.redirect('/public/capture.html');
+});
+
 const requireApiKey = (req, res, next) => {
   const expected = process.env.API_KEY;
   if (!expected) return next();

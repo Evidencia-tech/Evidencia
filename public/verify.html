@@ -70,7 +70,10 @@
 
     <div class="card">
       <h1>Certificat</h1>
-
+<div id="imageWrapper" style="display:none; margin: 12px 0;">
+  <img id="proofImage" alt="Capture certifiée"
+       style="width:100%; border-radius: 12px; border: 1px solid #1f2937;" />
+</div>
       <div class="row"><div class="label">Proof ID</div><div id="pid" class="value">-</div></div>
       <div class="row"><div class="label">SHA-256 Hash</div><div id="hash" class="value">-</div></div>
       <div class="row"><div class="label">Timestamp (UTC)</div><div id="time" class="value">-</div></div>
@@ -87,20 +90,20 @@
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const apiBase = window.location.origin;
-
     document.getElementById('pid').textContent = id || 'Missing id';
-
     async function load() {
       if (!id) return;
       const res = await fetch(`${apiBase}/api/verify/${id}`);
       if (!res.ok) return;
-
       const data = await res.json();
       document.getElementById('hash').textContent = data.hash;
       document.getElementById('time').textContent = new Date(data.timestamp * 1000).toISOString();
       document.getElementById('tx').textContent = data.txHash || 'N/A';
       if (data.qrUrl || data.qr) document.getElementById('qr').src = data.qrUrl || data.qr;
-
+      if (data.imageUrl) {
+        document.getElementById('proofImage').src = data.imageUrl;
+        document.getElementById('imageWrapper').style.display = 'block';
+      }
       const btn = document.getElementById('viewTx');
       if (data.txHash && data.txHash !== 'demo-no-chain') {
         btn.disabled = false;

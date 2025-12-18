@@ -3,305 +3,226 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Évidencia – Capture et certification</title>
+  <title>Évidencia – Capture certifiée</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --primary:#2563eb;
-      --primary2:#0ea5e9;
-      --text:#0f172a;
-      --muted:#475569;
-      --bg:#F3EBDD;
-      --card:#111827;
-      --border:#1f2937;
-      --ok:#16a34a;
-      --warn:#f59e0b;
-      --err:#dc2626;
+    :root {
+      --bg: #F3EBDD;
+      --card: #111827;
+      --border: #1f2937;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --primary: #60a5fa;
+      --accent: #22c55e;
+      --error: #f87171;
     }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family:'Inter',sans-serif;
-      background:var(--bg);
-      color:#fff;
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 12px;
     }
-
-    .page{
-      width:100%;
-      min-height:100vh;
-      padding:24px 16px 48px;
+    .wrapper { width: 100%; max-width: 520px; }
+    .logo { text-align: center; margin-bottom: 16px; }
+    .logo img { width: 160px; height: auto; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
     }
-
-    .brand{
-      width:100%;
-      display:flex;
-      justify-content:center;
-      margin:16px 0 18px;
+    h1 { margin: 0 0 6px; color: var(--primary); font-size: 22px; }
+    p { margin: 0 0 14px; color: var(--muted); }
+    button.primary {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #0b1220;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
     }
-    .brand-logo{
-      width:320px;
-      max-width:70vw;
-      height:auto;
-      opacity:.95;
-      display:block;
+    button.primary:disabled { opacity: 0.7; cursor: not-allowed; }
+    .status-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      font-size: 14px;
+      min-height: 48px;
     }
-
-    .container{
-      display:flex;
-      justify-content:center;
-      align-items:flex-start;
+    .status-box.success { color: var(--accent); }
+    .status-box.error { color: var(--error); }
+    .field { margin-top: 12px; }
+    .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--text);
+      font-size: 14px;
     }
-
-    .card{
-      width:100%;
-      max-width:520px;
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:20px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.35);
-    }
-
-    h1{ margin:0 0 8px; font-size:22px; color:#60a5fa; }
-    p{ margin:0 0 14px; color:#9ca3af; }
-
-    .actions{ display:flex; gap:8px; align-items:center; }
-
-    .btn{
-      appearance:none;
-      border:none;
-      padding:14px 16px;
-      border-radius:12px;
-      background:var(--primary);
-      color:#fff;
-      font-weight:600;
-      width:100%;
-      cursor:pointer;
-      font-size:16px;
-      text-align:center;
-    }
-    .btn:disabled{ opacity:.6; cursor:not-allowed; }
-.file-wrap{
-  width:100%;
-}
-.file-input{
-  position:fixed;
-  left:-9999px;
-  top:0;
-  width:1px;
-  height:1px;
-  opacity:0;
-}
-    .status{
-      margin:12px 0;
-      font-size:14px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,0.04);
-      color:#cbd5e1;
-    }
-    .status.loading{ border-color:rgba(14,165,233,.6); color:#e0f2fe; }
-    .status.success{ border-color:rgba(22,163,74,.7); color:#dcfce7; }
-    .status.error{ border-color:rgba(220,38,38,.7); color:#fee2e2; }
-
-    .result{
-      border-top:1px solid var(--border);
-      padding-top:12px;
-      margin-top:12px;
-      display:none;
-    }
-    .row{ margin:8px 0; }
-    .label{ font-size:12px; text-transform:uppercase; color:#9ca3af; letter-spacing:.5px; }
-    .value{ word-break:break-all; font-weight:600; color:#fff; }
-
-    .link-btn{ margin-top:10px; background:var(--primary2); }
-    .ghost-btn{
-      margin-top:8px;
-      background:rgba(255,255,255,0.08);
-      color:#e5e7eb;
-    }
-    .ghost-btn:hover{ background:rgba(255,255,255,0.12); }
-
-    .preview{ display:none; margin-top:12px; }
-    .preview img{ width:100%; border-radius:12px; border:1px solid var(--border); }
-
-    input[type="text"]{
-      width:100%;
-      padding:12px;
-      border-radius:10px;
-      border:1px solid var(--border);
-      font-size:14px;
-      background:rgba(255,255,255,0.06);
-      color:#e5e7eb;
-      outline:none;
-    }
-    input[type="text"]::placeholder{ color:#94a3b8; }
-
-    footer{
-      text-align:center;
-      margin-top:16px;
-      font-size:12px;
-      color:#9ca3af;
-    }
+    .preview { display: none; margin-top: 12px; }
+    .preview img { width: 100%; border-radius: 12px; border: 1px solid var(--border); }
+    .result { display: none; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .row { margin: 6px 0; }
+    .value { word-break: break-all; color: var(--text); font-weight: 600; }
+    .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .ghost { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 12px; flex: 1; min-width: 140px; cursor: pointer; }
+    footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 12px; }
   </style>
 </head>
-
 <body>
-  <div class="page">
-    <div class="brand">
-      <img src="/public/Logo.png" alt="Évidencia" class="brand-logo">
+  <div class="wrapper">
+    <div class="logo">
+      <img src="/public/Logo.png" alt="Logo Évidencia" />
     </div>
+    <div class="card">
+      <h1>Prendre une photo certifiée</h1>
+      <p>La caméra s'ouvre, la photo est certifiée immédiatement puis vous êtes redirigé vers la preuve publique.</p>
+      <button class="primary" id="captureButton">Prendre une photo</button>
+      <input id="photoInput" type="file" accept="image/*" capture="environment" style="display:none;" />
 
-    <div class="container">
-      <div class="card">
-        <h1>Prendre une photo certifiée</h1>
-        <p>Utilisez la caméra de votre smartphone pour capturer une preuve. Le hash est calculé et envoyé au serveur dès la prise de vue.</p>
-        
-<div class="file-wrap">
-  <button class="btn" type="button" id="captureButton">Prendre une photo</button>
-  <input class="file-input" id="photoInput" type="file" accept="image/*" capture="environment" />
-</div>
-        <div style="margin-top:10px;">
-          <div class="label" style="margin-bottom:6px;">Clé API (optionnel si définie)</div>
-          <input id="apiKey" type="text" placeholder="x-api-key" />
-        </div>
-
-        <div class="status" id="status">Aucune photo sélectionnée.</div>
-
-        <div class="preview" id="previewWrapper">
-          <div class="label">Aperçu</div>
-          <img id="previewImage" alt="Aperçu de la photo" />
-        </div>
-
-        <div class="result" id="result">
-          <div class="row"><div class="label">Proof ID</div><div class="value" id="proofId">-</div></div>
-          <div class="row"><div class="label">Hash SHA-256</div><div class="value" id="hash">-</div></div>
-          <div class="row"><div class="label">Horodatage UTC</div><div class="value" id="timestamp">-</div></div>
-
-          <button class="btn link-btn" id="openProof" disabled>Ouvrir la certification</button>
-          <button class="btn ghost-btn" id="shareProof" style="display:none;">Partager</button>
-        </div>
-
-        <footer>Certifié par Évidencia</footer>
+      <div class="field">
+        <label class="label" for="apiKey">Clé API (optionnel)</label>
+        <input id="apiKey" type="text" placeholder="x-api-key" autocomplete="off" />
       </div>
+
+      <div class="status-box" id="statusBox">En attente. Appuyez sur "Prendre une photo".</div>
+
+      <div class="preview" id="previewWrapper">
+        <div class="label">Aperçu</div>
+        <img id="previewImage" alt="Aperçu de la photo" />
+      </div>
+
+      <div class="result" id="result">
+        <div class="row"><div class="label">Proof ID</div><div class="value" id="proofId">-</div></div>
+        <div class="row"><div class="label">Hash</div><div class="value" id="hash">-</div></div>
+        <div class="row"><div class="label">Horodatage</div><div class="value" id="timestamp">-</div></div>
+        <div class="actions">
+          <button class="ghost" id="openProof" disabled>Ouvrir la certification</button>
+          <button class="ghost" id="shareProof" style="display:none;">Partager</button>
+        </div>
+      </div>
+      <footer>Certifié par Évidencia</footer>
     </div>
   </div>
 
-  <script>
-    const photoInput = document.getElementById('photoInput');
-    const statusEl = document.getElementById('status');
-    const resultEl = document.getElementById('result');
-    const proofIdEl = document.getElementById('proofId');
-    const hashEl = document.getElementById('hash');
-    const timestampEl = document.getElementById('timestamp');
-    const openProofBtn = document.getElementById('openProof');
-    const shareProofBtn = document.getElementById('shareProof');
-    const captureButton = document.getElementById('captureButton');
-   captureButton.addEventListener('click', () => {
-  photoInput.value = '';
-  setStatus(null, 'Ouverture de la caméra…');
-  photoInput.click();
-});
-    const apiKeyInput = document.getElementById('apiKey');
-    const previewWrapper = document.getElementById('previewWrapper');
-    const previewImage = document.getElementById('previewImage');
+<script>
+  const photoInput = document.getElementById('photoInput');
+  const captureButton = document.getElementById('captureButton');
+  const statusBox = document.getElementById('statusBox');
+  const resultEl = document.getElementById('result');
+  const proofIdEl = document.getElementById('proofId');
+  const hashEl = document.getElementById('hash');
+  const timestampEl = document.getElementById('timestamp');
+  const openProofBtn = document.getElementById('openProof');
+  const shareProofBtn = document.getElementById('shareProof');
+  const previewWrapper = document.getElementById('previewWrapper');
+  const previewImage = document.getElementById('previewImage');
+  const apiKeyInput = document.getElementById('apiKey');
 
-    function setStatus(type, message){
-      statusEl.classList.remove('loading','success','error');
-      if(type) statusEl.classList.add(type);
-      statusEl.textContent = message;
-    }
+  function setStatus(message, type) {
+    statusBox.textContent = message;
+    statusBox.classList.remove('success', 'error');
+    if (type) statusBox.classList.add(type);
+  }
 
-    function setLoading(isLoading, message){
-      captureButton.textContent = isLoading ? 'Envoi en cours…' : 'Prendre une photo';
-      captureButton.style.opacity = isLoading ? '0.85' : '1';
-      setStatus(isLoading ? 'loading' : null, message);
-    }
+  function resetInput() {
+    photoInput.value = '';
+  }
 
-    async function certify(file){
-      if(!file){
-        setStatus('error','Veuillez prendre une photo.');
-        return;
+  async function uploadFile(file) {
+    setStatus('Photo détectée ✅ envoi...', 'success');
+    captureButton.disabled = true;
+
+    const formData = new FormData();
+    formData.append('file', file, file.name || 'capture.jpg');
+
+    const headers = {};
+    const key = apiKeyInput.value.trim();
+    if (key) headers['x-api-key'] = key;
+
+    try {
+      const response = await fetch(`${window.location.origin}/api/certify`, {
+        method: 'POST',
+        headers: Object.keys(headers).length ? headers : undefined,
+        body: formData
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ message: 'Erreur API' }));
+        throw new Error(err.message || 'Erreur API');
       }
 
-      setLoading(true,'Certification en cours…');
-      resultEl.style.display = 'none';
-      openProofBtn.disabled = true;
+      const data = await response.json();
+      proofIdEl.textContent = data.id;
+      hashEl.textContent = data.hash;
+      timestampEl.textContent = new Date(data.timestamp * 1000).toISOString();
+      resultEl.style.display = 'block';
+      openProofBtn.disabled = false;
 
-      const formData = new FormData();
-      formData.append('file', file, file.name || 'capture.jpg');
+      const verifyUrl = data.verifyUrl || `/public/verify.html?id=${data.id}`;
+      openProofBtn.onclick = () => window.location.href = verifyUrl;
 
-      try{
-        const res = await fetch(`${window.location.origin}/api/certify`, {
-          method:'POST',
-          headers: apiKeyInput.value ? { 'x-api-key': apiKeyInput.value } : undefined,
-          body: formData
-        });
-
-        if(!res.ok){
-          const err = await res.json().catch(() => ({ message:'Erreur inconnue' }));
-          throw new Error(err.message || 'Certification impossible');
-        }
-
-        const data = await res.json();
-        const verifyLink = data.verifyUrl || `/public/verify.html?id=${data.id}`;
-
-        proofIdEl.textContent = data.id;
-        hashEl.textContent = data.hash;
-        timestampEl.textContent = new Date(data.timestamp * 1000).toISOString();
-
-        openProofBtn.disabled = false;
-        openProofBtn.onclick = () => window.location.href = verifyLink;
-
-        // aperçu : on préfère l'URL locale (immédiat), sinon imageUrl si dispo
-        if(file){
-          previewImage.src = URL.createObjectURL(file);
-          previewWrapper.style.display = 'block';
-        } else if(data.imageUrl){
-          previewImage.src = data.imageUrl;
-          previewWrapper.style.display = 'block';
-        }
-
-        shareProofBtn.style.display = 'block';
-        shareProofBtn.onclick = async () => {
-          if(navigator.share){
-            try{
-              await navigator.share({ title:'Preuve Évidencia', text:'Photo certifiée', url: verifyLink });
-            } catch(e){}
-          } else {
-            await navigator.clipboard.writeText(verifyLink);
-            alert('Lien copié dans le presse-papiers');
-          }
-        };
-
-        resultEl.style.display = 'block';
-        setStatus('success','Photo certifiée avec succès. Redirection…');
-
-        setTimeout(() => window.location.href = verifyLink, 1200);
-      } catch(error){
-        setStatus('error', error.message || 'Erreur lors de la certification');
-      } finally {
-        captureButton.textContent = 'Prendre une photo';
-        captureButton.style.opacity = '1';
-        photoInput.value = '';
-      }
-    }
-
-    photoInput.addEventListener('change', () => {
-      photoInput.addEventListener('input', () => {
-  // fallback iOS
-      setStatus('loading','Photo détectée ✅ envoi…');
-      const file = photoInput.files && photoInput.files[0];
-      if(file){
-        setStatus('loading','Photo sélectionnée, envoi…');
-        previewImage.src = URL.createObjectURL(file);
+      if (data.imageUrl) {
+        previewImage.src = data.imageUrl;
         previewWrapper.style.display = 'block';
-        certify(file);
       }
-    });
-  </script>
+
+      if (navigator.share) {
+        shareProofBtn.style.display = 'inline-block';
+        shareProofBtn.onclick = async () => {
+          try { await navigator.share({ title: 'Preuve Évidencia', url: verifyUrl }); } catch (e) {}
+        };
+      }
+
+      setStatus('Photo certifiée avec succès. Redirection...', 'success');
+      setTimeout(() => window.location.href = verifyUrl, 1200);
+    } catch (err) {
+      setStatus(err.message || 'Erreur lors de la certification', 'error');
+      captureButton.disabled = false;
+    } finally {
+      resetInput();
+    }
+  }
+
+  function handleFileSelection() {
+    const file = photoInput.files && photoInput.files[0];
+    if (!file) {
+      setStatus('Aucune photo détectée, veuillez réessayer.', 'error');
+      return;
+    }
+    const localUrl = URL.createObjectURL(file);
+    previewImage.src = localUrl;
+    previewWrapper.style.display = 'block';
+    uploadFile(file);
+  }
+
+  ['change', 'input'].forEach(evt => {
+    photoInput.addEventListener(evt, handleFileSelection);
+  });
+
+  captureButton.addEventListener('click', () => {
+    resetInput();
+    setStatus('Ouverture de la caméra...', undefined);
+    photoInput.click();
+  });
+</script>
 </body>
 </html>
