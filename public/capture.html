@@ -225,11 +225,14 @@ captureButton.disabled = false;
     photoInput.addEventListener(evt, handleFileSelection);
   });
 
-  captureButton.addEventListener('click', () => {
-    resetInput();
-    setStatus('Ouverture de la caméra...', undefined);
-    photoInput.click();
-  });
+captureButton.addEventListener('click', () => {
+  captureButton.disabled = false;      // sécurité
+  resetInput();                        // important pour que "change" se déclenche même si on reprend une photo
+  setStatus('Ouverture de la caméra...', undefined);
+
+  // petit délai aide certains iPhone à bien prendre le reset avant l'ouverture
+  setTimeout(() => photoInput.click(), 50);
+});
 </script>
 </body>
 </html>
