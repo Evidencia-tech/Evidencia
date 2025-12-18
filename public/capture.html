@@ -1,8 +1,5 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <div style="position:fixed;top:0;left:0;background:red;color:white;padding:6px;z-index:999999">
-  TEST CAPTURE V2
-</div>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -135,107 +132,6 @@
 
 <script>
   alert("JS CHARGÉ");
-  const photoInput = document.getElementById('photoInput');
-  const captureButton = document.getElementById('captureButton');
-  const statusBox = document.getElementById('statusBox');
-  const resultEl = document.getElementById('result');
-  const proofIdEl = document.getElementById('proofId');
-  const hashEl = document.getElementById('hash');
-  const timestampEl = document.getElementById('timestamp');
-  const openProofBtn = document.getElementById('openProof');
-  const shareProofBtn = document.getElementById('shareProof');
-  const previewWrapper = document.getElementById('previewWrapper');
-  const previewImage = document.getElementById('previewImage');
-  const apiKeyInput = document.getElementById('apiKey');
-
-  captureButton.disabled = false;
-
-  function setStatus(message, type) {
-    statusBox.textContent = message;
-    statusBox.classList.remove('success', 'error');
-    if (type) statusBox.classList.add(type);
-  }
-
-  function resetInput() {
-    photoInput.value = '';
-  }
-
-  async function uploadFile(file) {
-    setStatus('Photo détectée ✅ envoi...', 'success');
-    captureButton.disabled = true;
-
-    const formData = new FormData();
-    formData.append('file', file, file.name || 'capture.jpg');
-
-    const headers = {};
-    const key = apiKeyInput.value.trim();
-    if (key) headers['x-api-key'] = key;
-
-    try {
-      const response = await fetch(`${window.location.origin}/api/certify`, {
-        method: 'POST',
-        headers: Object.keys(headers).length ? headers : undefined,
-        body: formData
-      });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({ message: 'Erreur API' }));
-        throw new Error(err.message || 'Erreur API');
-      }
-
-      const data = await response.json();
-      proofIdEl.textContent = data.id;
-      hashEl.textContent = data.hash;
-      timestampEl.textContent = new Date(data.timestamp * 1000).toISOString();
-      resultEl.style.display = 'block';
-      openProofBtn.disabled = false;
-
-      const verifyUrl = data.verifyUrl || `/public/verify.html?id=${data.id}`;
-      openProofBtn.onclick = () => window.location.href = verifyUrl;
-
-      if (data.imageUrl) {
-        previewImage.src = data.imageUrl;
-        previewWrapper.style.display = 'block';
-      }
-
-      if (navigator.share) {
-        shareProofBtn.style.display = 'inline-block';
-        shareProofBtn.onclick = async () => {
-          try { await navigator.share({ title: 'Preuve Évidencia', url: verifyUrl }); } catch (e) {}
-        };
-      }
-
-      setStatus('Photo certifiée avec succès. Redirection...', 'success');
-      setTimeout(() => window.location.href = verifyUrl, 1200);
-    } catch (err) {
-      setStatus(err.message || 'Erreur lors de la certification', 'error');
-      captureButton.disabled = false;
-    } finally {
-      resetInput();
-    }
-  }
-
-  function handleFileSelection() {
-    const file = photoInput.files && photoInput.files[0];
-    if (!file) {
-      setStatus('Aucune photo détectée, veuillez réessayer.', 'error');
-      return;
-    }
-    const localUrl = URL.createObjectURL(file);
-    previewImage.src = localUrl;
-    previewWrapper.style.display = 'block';
-    uploadFile(file);
-  }
-
-  // ✅ Le bon event
-  photoInput.addEventListener('change', handleFileSelection);
-
-captureButton.addEventListener('click', () => {
-  alert('OK clic');
-  resetInput();
-  setStatus('Ouverture de la caméra...', undefined);
-  photoInput.click();
-  });
 </script>
 </body>
 </html>
