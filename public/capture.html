@@ -129,21 +129,6 @@
       <footer>Certifié par Évidencia</footer>
     </div>
   </div>
-
-<script>
-  const btn = document.getElementById("captureButton");
-  document.body.insertAdjacentHTML(
-    "afterbegin",
-    "<div id='jsBadge' style='position:fixed;bottom:10px;left:10px;background:#111;color:#fff;padding:6px 10px;border-radius:10px;z-index:999999'>JS FRONT OK</div>"
-  );
-
-  if (!btn) {
-    document.getElementById("jsBadge").textContent = "JS OK mais bouton introuvable (id?)";
-  } else {
-    btn.addEventListener("click", () => {
-      document.getElementById("jsBadge").textContent = "CLIC OK";
-    });
-  }
-</script>
+<script src="/public/capture.js"></script>
 </body>
 </html>
