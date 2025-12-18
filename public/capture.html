@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Évidencia – Capture certifiée</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F3EBDD;
+      --card: #111827;
+      --border: #1f2937;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --primary: #60a5fa;
+      --accent: #22c55e;
+      --error: #f87171;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 12px;
+    }
+    .wrapper { width: 100%; max-width: 520px; }
+    .logo { text-align: center; margin-bottom: 16px; }
+    .logo img { width: 160px; height: auto; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+    h1 { margin: 0 0 6px; color: var(--primary); font-size: 22px; }
+    p { margin: 0 0 14px; color: var(--muted); }
+    button.primary {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #0b1220;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button.primary:disabled { opacity: 0.7; cursor: not-allowed; }
+    .status-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      font-size: 14px;
+      min-height: 48px;
+    }
+    .status-box.success { color: var(--accent); }
+    .status-box.error { color: var(--error); }
+    .field { margin-top: 12px; }
+    .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .preview { display: none; margin-top: 12px; }
+    .preview img { width: 100%; border-radius: 12px; border: 1px solid var(--border); }
+    .result { display: none; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .row { margin: 6px 0; }
+    .value { word-break: break-all; color: var(--text); font-weight: 600; }
+    .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .ghost { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 12px; flex: 1; min-width: 140px; cursor: pointer; }
+    footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="logo">
+      <img src="/public/Logo.png" alt="Logo Évidencia" />
+    </div>
+    <div class="card">
+      <h1>Prendre une photo certifiée</h1>
+      <p>La caméra s'ouvre, la photo est certifiée immédiatement puis vous êtes redirigé vers la preuve publique.</p>
+      <button class="primary" id="captureButton">Prendre une photo</button>
+      <input id="photoInput" type="file" accept="image/*" capture="environment" style="display:none;" />
+
+      <div class="field">
+        <label class="label" for="apiKey">Clé API (optionnel)</label>
+        <input id="apiKey" type="text" placeholder="x-api-key" autocomplete="off" />
+      </div>
+
+      <div class="status-box" id="statusBox">En attente. Appuyez sur "Prendre une photo".</div>
+
+      <div class="preview" id="previewWrapper">
+        <div class="label">Aperçu</div>
+        <img id="previewImage" alt="Aperçu de la photo" />
+      </div>
+
+      <div class="result" id="result">
+        <div class="row"><div class="label">Proof ID</div><div class="value" id="proofId">-</div></div>
+        <div class="row"><div class="label">Hash</div><div class="value" id="hash">-</div></div>
+        <div class="row"><div class="label">Horodatage</div><div class="value" id="timestamp">-</div></div>
+        <div class="actions">
+          <button class="ghost" id="openProof" disabled>Ouvrir la certification</button>
+          <button class="ghost" id="shareProof" style="display:none;">Partager</button>
+        </div>
+      </div>
+      <footer>Certifié par Évidencia</footer>
+    </div>
+  </div>
+
+<script>
+  const photoInput = document.getElementById('photoInput');
+  const captureButton = document.getElementById('captureButton');
+  const statusBox = document.getElementById('statusBox');
+  const resultEl = document.getElementById('result');
+  const proofIdEl = document.getElementById('proofId');
+  const hashEl = document.getElementById('hash');
+  const timestampEl = document.getElementById('timestamp');
+  const openProofBtn = document.getElementById('openProof');
+  const shareProofBtn = document.getElementById('shareProof');
+  const previewWrapper = document.getElementById('previewWrapper');
+  const previewImage = document.getElementById('previewImage');
+  const apiKeyInput = document.getElementById('apiKey');
+
+  function setStatus(message, type) {
+    statusBox.textContent = message;
+    statusBox.classList.remove('success', 'error');
+    if (type) statusBox.classList.add(type);
+  }
+
+  function resetInput() {
+    photoInput.value = '';
+  }
+
+  async function uploadFile(file) {
+    setStatus('Photo détectée ✅ envoi...', 'success');
+    captureButton.disabled = true;
+
+    const formData = new FormData();
+    formData.append('file', file, file.name || 'capture.jpg');
+
+    const headers = {};
+    const key = apiKeyInput.value.trim();
+    if (key) headers['x-api-key'] = key;
+
+    try {
+      const response = await fetch(`${window.location.origin}/api/certify`, {
+        method: 'POST',
+        headers: Object.keys(headers).length ? headers : undefined,
+        body: formData
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ message: 'Erreur API' }));
+        throw new Error(err.message || 'Erreur API');
+      }
+
+      const data = await response.json();
+      proofIdEl.textContent = data.id;
+      hashEl.textContent = data.hash;
+      timestampEl.textContent = new Date(data.timestamp * 1000).toISOString();
+      resultEl.style.display = 'block';
+      openProofBtn.disabled = false;
+
+      const verifyUrl = data.verifyUrl || `/public/verify.html?id=${data.id}`;
+      openProofBtn.onclick = () => window.location.href = verifyUrl;
+
+      if (data.imageUrl) {
+        previewImage.src = data.imageUrl;
+        previewWrapper.style.display = 'block';
+      }
+
+      if (navigator.share) {
+        shareProofBtn.style.display = 'inline-block';
+        shareProofBtn.onclick = async () => {
+          try { await navigator.share({ title: 'Preuve Évidencia', url: verifyUrl }); } catch (e) {}
+        };
+      }
+
+      setStatus('Photo certifiée avec succès. Redirection...', 'success');
+      setTimeout(() => window.location.href = verifyUrl, 1200);
+    } catch (err) {
+      setStatus(err.message || 'Erreur lors de la certification', 'error');
+      captureButton.disabled = false;
+    } finally {
+      resetInput();
+    }
+  }
+
+  function handleFileSelection() {
+    const file = photoInput.files && photoInput.files[0];
+    if (!file) {
+      setStatus('Aucune photo détectée, veuillez réessayer.', 'error');
+      return;
+    }
+    const localUrl = URL.createObjectURL(file);
+    previewImage.src = localUrl;
+    previewWrapper.style.display = 'block';
+    uploadFile(file);
+  }
+
+  ['change', 'input'].forEach(evt => {
+    photoInput.addEventListener(evt, handleFileSelection);
+  });
+
+  captureButton.addEventListener('click', () => {
+    resetInput();
+    setStatus('Ouverture de la caméra...', undefined);
+    photoInput.click();
+  });
+</script>
+</body>
+</html>
