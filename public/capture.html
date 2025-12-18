@@ -296,6 +296,7 @@
     }
 
     photoInput.addEventListener('change', () => {
+      setStatus('loading','Photo détectée ✅ envoi…');
       const file = photoInput.files && photoInput.files[0];
       if(file){
         setStatus('loading','Photo sélectionnée, envoi…');
