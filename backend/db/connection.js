@@ -26,15 +26,15 @@ db.serialize(() => {
       mimetype TEXT,
       txHash TEXT,
       uri TEXT,
-      qr TEXT,
-      imageUrl TEXT
-    )`
-  );
-  db.run('ALTER TABLE proofs ADD COLUMN imageUrl TEXT', (err) => {
-    if (err && !err.message.includes('duplicate column name')) {
-      console.error('Failed to ensure imageUrl column', err);
-    }
-  });
+qr TEXT,
+imageUrl TEXT
+)
+);
+
+db.run('ALTER TABLE proofs ADD COLUMN imageUrl TEXT', (err) => {
+  if (err && !err.message.includes('duplicate column name')) {
+    console.error('Failed to ensure imageUrl column', err);
+  }
 });
 
 export default db;

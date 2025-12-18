@@ -37,6 +37,10 @@ const resolveImageUrl = (id) => {
 };
 
 const app = express();
+
+const app = express();
+app.set('trust proxy', 1);
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }
@@ -137,7 +141,7 @@ app.get('/api/history', requireApiKey, async (_req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Evidencia backend listening on port ${PORT}`);
 });
