@@ -85,6 +85,14 @@
     .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
     .ghost { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 12px; flex: 1; min-width: 140px; cursor: pointer; }
     footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 12px; }
+    .file-input {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
   </style>
 </head>
 <body>
@@ -96,8 +104,7 @@
       <h1>Prendre une photo certifiée</h1>
       <p>La caméra s'ouvre, la photo est certifiée immédiatement puis vous êtes redirigé vers la preuve publique.</p>
       <button class="primary" id="captureButton">Prendre une photo</button>
-      <input id="photoInput" type="file" accept="image/*" capture="environment" style="display:none;" />
-
+      <input id="photoInput" class="file-input" type="file" accept="image/*" capture="environment" />
       <div class="field">
         <label class="label" for="apiKey">Clé API (optionnel)</label>
         <input id="apiKey" type="text" placeholder="x-api-key" autocomplete="off" />
@@ -136,7 +143,7 @@
   const previewWrapper = document.getElementById('previewWrapper');
   const previewImage = document.getElementById('previewImage');
   const apiKeyInput = document.getElementById('apiKey');
-
+captureButton.disabled = false;
   function setStatus(message, type) {
     statusBox.textContent = message;
     statusBox.classList.remove('success', 'error');
