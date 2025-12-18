@@ -131,8 +131,6 @@
   </div>
 
 <script>
-  alert("CAPTURE: JS chargé");
-
   const photoInput = document.getElementById('photoInput');
   const captureButton = document.getElementById('captureButton');
   const statusBox = document.getElementById('statusBox');
@@ -232,7 +230,6 @@
   captureButton.addEventListener('click', () => {
     resetInput();
     setStatus('Ouverture de la caméra...', undefined);
-    setTimeout(() => photoInput.click(), 50);
   });
 </script>
 </body>
