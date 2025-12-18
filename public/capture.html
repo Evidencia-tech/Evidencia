@@ -220,8 +220,6 @@ captureButton.disabled = false;
     previewWrapper.style.display = 'block';
     uploadFile(file);
   }
-
-  ['change', 'input'].forEach(evt => {
     photoInput.addEventListener(evt, handleFileSelection);
   });
 
