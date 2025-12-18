@@ -17,8 +17,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 db.serialize(() => {
-  db.run(
-    `CREATE TABLE IF NOT EXISTS proofs (
+  db.run(`
+    CREATE TABLE IF NOT EXISTS proofs (
       id TEXT PRIMARY KEY,
       hash TEXT NOT NULL,
       timestamp INTEGER NOT NULL,
@@ -26,15 +26,16 @@ db.serialize(() => {
       mimetype TEXT,
       txHash TEXT,
       uri TEXT,
-qr TEXT,
-imageUrl TEXT
-)
-);
+      qr TEXT,
+      imageUrl TEXT
+    )
+  `);
 
-db.run('ALTER TABLE proofs ADD COLUMN imageUrl TEXT', (err) => {
-  if (err && !err.message.includes('duplicate column name')) {
-    console.error('Failed to ensure imageUrl column', err);
-  }
+  db.run(`ALTER TABLE proofs ADD COLUMN imageUrl TEXT`, (err) => {
+    if (err && !err.message.includes('duplicate column name')) {
+      console.error('Failed to ensure imageUrl column', err);
+    }
+  });
 });
 
 export default db;
