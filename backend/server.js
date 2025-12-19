@@ -39,6 +39,8 @@ const resolveImageUrl = (id) => {
 const app = express();
 app.set('trust proxy', 1);
 
+app.use('/public', express.static(path.join(__dirname, '../public')));
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }
