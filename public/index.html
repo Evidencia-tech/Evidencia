@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Évidencia — Preuves numériques infalsifiables</title>
+  <meta name="description" content="Évidencia certifie tes preuves numériques (photo, vidéo, document) avec empreinte cryptographique et horodatage, pour une vérification simple et publique." />
+  <link rel="icon" href="/favicon.ico" />
+  <style>
+    :root{
+      --bg:#0b0f17;
+      --card:rgba(255,255,255,.06);
+      --stroke:rgba(255,255,255,.10);
+      --text:#eaf0ff;
+      --muted:rgba(234,240,255,.70);
+      --accent:#7c5cff;
+      --accent2:#22c55e;
+      --shadow: 0 18px 55px rgba(0,0,0,.45);
+      --radius: 18px;
+      --max: 1100px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:
+        radial-gradient(900px 600px at 15% 10%, rgba(124,92,255,.25), transparent 55%),
+        radial-gradient(800px 520px at 85% 15%, rgba(34,197,94,.18), transparent 55%),
+        radial-gradient(900px 700px at 50% 120%, rgba(255,255,255,.08), transparent 60%),
+        var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+    a{color:inherit}
+    .wrap{max-width:var(--max); margin:0 auto; padding:28px 18px 60px;}
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:16px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:700; letter-spacing:.2px;
+    }
+    .logo{
+      width:34px; height:34px; border-radius:12px;
+      background: linear-gradient(135deg, rgba(124,92,255,1), rgba(34,197,94,1));
+      box-shadow: 0 10px 30px rgba(124,92,255,.22);
+    }
+    .pill{
+      font-size:12px;
+      color:var(--muted);
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+      padding:8px 10px;
+      border-radius:999px;
+      white-space:nowrap;
+    }
+
+    main{margin-top:52px;}
+    .hero{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:22px;
+      align-items:stretch;
+    }
+    @media (max-width: 920px){
+      .hero{grid-template-columns:1fr; margin-top:34px;}
+    }
+
+    .h-card{
+      border:1px solid var(--stroke);
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .h-content{padding:26px;}
+    h1{
+      margin:0 0 12px;
+      font-size:44px;
+      line-height:1.05;
+      letter-spacing:-.6px;
+    }
+    @media (max-width: 520px){
+      h1{font-size:34px;}
+    }
+    .sub{
+      margin:0 0 18px;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.55;
+      max-width: 62ch;
+    }
+    .cta-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:18px;}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:10px;
+      padding:13px 16px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      text-decoration:none;
+      font-weight:650;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      user-select:none;
+    }
+    .btn:active{transform: translateY(1px);}
+    .btn-primary{
+      background: linear-gradient(135deg, rgba(124,92,255,1), rgba(124,92,255,.78));
+      border-color: rgba(124,92,255,.55);
+      box-shadow: 0 18px 40px rgba(124,92,255,.22);
+    }
+    .btn-primary:hover{background: linear-gradient(135deg, rgba(124,92,255,1), rgba(124,92,255,.70));}
+    .btn-secondary{
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+    }
+    .btn-secondary:hover{background: rgba(255,255,255,.06);}
+
+    .mini{
+      margin-top:14px;
+      display:flex; flex-wrap:wrap; gap:10px;
+      color: var(--muted);
+      font-size:13px;
+    }
+    .mini span{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.03);
+      padding:8px 10px;
+      border-radius:999px;
+    }
+
+    .side{
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .kpi{
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.18);
+      border-radius: 16px;
+      padding:14px;
+    }
+    .kpi .t{font-size:12px; color:var(--muted); margin-bottom:6px;}
+    .kpi .v{font-size:16px; font-weight:650; line-height:1.35;}
+    .steps{
+      margin-top:8px;
+      display:grid;
+      gap:10px;
+    }
+    .step{
+      display:flex; gap:10px;
+      padding:12px;
+      border-radius: 14px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.03);
+    }
+    .dot{
+      width:10px; height:10px; border-radius:99px;
+      margin-top:6px;
+      background: rgba(34,197,94,1);
+      box-shadow: 0 10px 26px rgba(34,197,94,.18);
+      flex:0 0 auto;
+    }
+    .step b{display:block; margin-bottom:2px;}
+    footer{
+      margin-top:26px;
+      color: rgba(234,240,255,.55);
+      font-size:12px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>Évidencia</div>
+      </div>
+      <div class="pill">Preuve numérique • Empreinte • Horodatage</div>
+    </header>
+
+    <main>
+      <div class="hero">
+        <section class="h-card">
+          <div class="h-content">
+            <h1>Rends tes preuves numériques incontestables.</h1>
+            <p class="sub">
+              Évidencia scelle une <b>empreinte cryptographique</b> de tes fichiers (photo, vidéo, document) et génère une
+              <b>preuve vérifiable publiquement</b>. Objectif : crédibilité immédiate, traçabilité, et intégrité des contenus.
+            </p>
+
+            <div class="cta-row">
+              <a class="btn btn-primary" href="/public/capture.html">
+                Démarrer une certification
+                <span aria-hidden="true">→</span>
+              </a>
+              <a class="btn btn-secondary" href="/public/verify.html">
+                Vérifier une preuve
+              </a>
+            </div>
+
+            <div class="mini" aria-label="points clés">
+              <span>Hash (SHA-256)</span>
+              <span>Horodatage</span>
+              <span>Preuve publique</span>
+              <span>Process simple</span>
+            </div>
+          </div>
+        </section>
+
+        <aside class="h-card side">
+          <div class="kpi">
+            <div class="t">Positionnement</div>
+            <div class="v">Produit d’intégrité et de conformité — pas du marketing.</div>
+          </div>
+
+          <div class="kpi">
+            <div class="t">Cas d’usage</div>
+            <div class="v">Assureurs • Journalistes • Enquêtes • Litiges • Conformité</div>
+          </div>
+
+          <div class="kpi">
+            <div class="t">Comment ça marche</div>
+            <div class="steps">
+              <div class="step">
+                <div class="dot"></div>
+                <div><b>1. Capture / Upload</b>Tu fournis un fichier.</div>
+              </div>
+              <div class="step">
+                <div class="dot"></div>
+                <div><b>2. Empreinte + horodatage</b>Le fichier est scellé (hash).</div>
+              </div>
+              <div class="step">
+                <div class="dot"></div>
+                <div><b>3. Preuve publique</b>URL + QR pour vérifier.</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <footer>
+        <div>© <span id="y"></span> Évidencia.tech</div>
+        <div>Intégrité • Traçabilité • Vérifiabilité</div>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
