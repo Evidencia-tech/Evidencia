@@ -39,7 +39,7 @@ const resolveImageUrl = (id) => {
 const app = express();
 app.set('trust proxy', 1);
 
-app.use('/public', express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -53,10 +53,6 @@ app.use(cors());
 app.use(express.json());
 app.use('/public', express.static(path.join(__dirname, '../public')));
 
-// Simple redirect for convenience when opening the root URL
-app.get('/', (_req, res) => {
-  res.redirect('/public/capture.html');
-});
 
 const requireApiKey = (req, res, next) => {
   const expected = process.env.API_KEY;
