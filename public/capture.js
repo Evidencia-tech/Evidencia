@@ -83,10 +83,10 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       }
 
-      setStatus('Photo certifiée avec succès. Redirection...', 'success');
+      setStatus('Photo certifiée avec succès ✅ Redirection...', 'success');
       setTimeout(() => window.location.href = verifyUrl, 1200);
     } catch (err) {
-      setStatus(err.message || 'Erreur lors de la certification', 'error');
+      setStatus(err.message || ' ❌ Erreur lors de la certification', 'error');
       captureButton.disabled = false;
     } finally {
       resetInput();
