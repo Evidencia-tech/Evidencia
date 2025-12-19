@@ -3,257 +3,261 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Évidencia — Preuves numériques infalsifiables</title>
-  <meta name="description" content="Évidencia certifie tes preuves numériques (photo, vidéo, document) avec empreinte cryptographique et horodatage, pour une vérification simple et publique." />
-  <link rel="icon" href="/favicon.ico" />
+  <title>Évidencia — La preuve numérique infalsifiable</title>
+  <meta name="description" content="Capturez une photo. Elle est immédiatement horodatée, hashée et vérifiable publiquement." />
+
+  <!-- Open Graph (optionnel si déjà géré ailleurs) -->
+  <meta property="og:title" content="Évidencia — La preuve numérique infalsifiable" />
+  <meta property="og:description" content="Capturez une photo. Horodatage, hash, vérification publique." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://evidencia.tech/" />
+  <meta property="og:image" content="/public/og-evidencia.png" />
+
   <style>
     :root{
-      --bg:#0b0f17;
-      --card:rgba(255,255,255,.06);
-      --stroke:rgba(255,255,255,.10);
-      --text:#eaf0ff;
-      --muted:rgba(234,240,255,.70);
-      --accent:#7c5cff;
-      --accent2:#22c55e;
-      --shadow: 0 18px 55px rgba(0,0,0,.45);
-      --radius: 18px;
-      --max: 1100px;
+      --bg:#F3EBDD;
+      --card:#111827;
+      --border:#1f2937;
+      --text:#0b1220;
+      --muted:#6b7280;
+      --primary:#60a5fa;
+      --accent:#22c55e;
+      --shadow: 0 12px 40px rgba(0,0,0,.18);
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      background:
-        radial-gradient(900px 600px at 15% 10%, rgba(124,92,255,.25), transparent 55%),
-        radial-gradient(800px 520px at 85% 15%, rgba(34,197,94,.18), transparent 55%),
-        radial-gradient(900px 700px at 50% 120%, rgba(255,255,255,.08), transparent 60%),
-        var(--bg);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
       color:var(--text);
-      min-height:100vh;
     }
-    a{color:inherit}
-    .wrap{max-width:var(--max); margin:0 auto; padding:28px 18px 60px;}
-    header{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:16px;
+    .wrap{
+      min-height:100svh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
     }
-    .brand{
-      display:flex; align-items:center; gap:10px;
-      font-weight:700; letter-spacing:.2px;
-    }
-    .logo{
-      width:34px; height:34px; border-radius:12px;
-      background: linear-gradient(135deg, rgba(124,92,255,1), rgba(34,197,94,1));
-      box-shadow: 0 10px 30px rgba(124,92,255,.22);
-    }
-    .pill{
-      font-size:12px;
-      color:var(--muted);
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.04);
-      padding:8px 10px;
-      border-radius:999px;
-      white-space:nowrap;
-    }
-
-    main{margin-top:52px;}
-    .hero{
+    .container{
+      width:min(980px, 100%);
       display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:22px;
+      grid-template-columns: 1.15fr .85fr;
+      gap:18px;
       align-items:stretch;
     }
-    @media (max-width: 920px){
-      .hero{grid-template-columns:1fr; margin-top:34px;}
+    @media (max-width: 860px){
+      .container{grid-template-columns:1fr}
     }
-
-    .h-card{
-      border:1px solid var(--stroke);
-      background: var(--card);
-      border-radius: var(--radius);
+    .panel{
+      background:rgba(255,255,255,.45);
+      border:1px solid rgba(0,0,0,.06);
+      border-radius:22px;
+      padding:26px;
       box-shadow: var(--shadow);
-      overflow:hidden;
+      backdrop-filter: blur(10px);
     }
-    .h-content{padding:26px;}
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-bottom:14px;
+    }
+    .brand img{
+      width:74px;
+      height:auto;
+      border-radius:14px;
+    }
     h1{
-      margin:0 0 12px;
-      font-size:44px;
+      margin:0;
+      font-size: clamp(28px, 3.2vw, 44px);
       line-height:1.05;
-      letter-spacing:-.6px;
-    }
-    @media (max-width: 520px){
-      h1{font-size:34px;}
+      letter-spacing:-0.02em;
     }
     .sub{
-      margin:0 0 18px;
+      margin:10px 0 0;
       color:var(--muted);
       font-size:16px;
-      line-height:1.55;
-      max-width: 62ch;
+      line-height:1.5;
+      max-width:60ch;
     }
-    .cta-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:18px;}
+    .ctaRow{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    }
     .btn{
-      display:inline-flex; align-items:center; justify-content:center;
-      gap:10px;
-      padding:13px 16px;
+      appearance:none;
+      border:none;
+      cursor:pointer;
       border-radius:14px;
-      border:1px solid var(--stroke);
+      padding:14px 16px;
+      font-weight:700;
+      font-size:15px;
       text-decoration:none;
-      font-weight:650;
-      transition: transform .08s ease, background .2s ease, border-color .2s ease;
-      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      transition: transform .05s ease, filter .15s ease;
     }
-    .btn:active{transform: translateY(1px);}
-    .btn-primary{
-      background: linear-gradient(135deg, rgba(124,92,255,1), rgba(124,92,255,.78));
-      border-color: rgba(124,92,255,.55);
-      box-shadow: 0 18px 40px rgba(124,92,255,.22);
+    .btn:active{transform: translateY(1px)}
+    .btnPrimary{
+      background: linear-gradient(180deg, rgba(96,165,250,1), rgba(59,130,246,1));
+      color:white;
+      min-width: 220px;
     }
-    .btn-primary:hover{background: linear-gradient(135deg, rgba(124,92,255,1), rgba(124,92,255,.70));}
-    .btn-secondary{
-      background: rgba(255,255,255,.04);
-      color: var(--text);
+    .btnGhost{
+      background: rgba(17,24,39,.06);
+      color:#111827;
+      border:1px solid rgba(17,24,39,.12);
     }
-    .btn-secondary:hover{background: rgba(255,255,255,.06);}
-
-    .mini{
-      margin-top:14px;
-      display:flex; flex-wrap:wrap; gap:10px;
-      color: var(--muted);
-      font-size:13px;
+    .grid3{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
     }
-    .mini span{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.03);
-      padding:8px 10px;
-      border-radius:999px;
+    @media (max-width: 860px){
+      .grid3{grid-template-columns:1fr}
     }
-
+    .step{
+      background: rgba(255,255,255,.65);
+      border:1px solid rgba(0,0,0,.06);
+      border-radius:18px;
+      padding:14px 14px;
+    }
+    .step .t{
+      font-weight:800;
+      margin:0 0 6px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .step p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.45;
+      font-size:14px;
+    }
     .side{
+      background: var(--card);
+      color:#f9fafb;
+      border-radius:22px;
+      border:1px solid var(--border);
       padding:22px;
+      box-shadow: var(--shadow);
       display:flex;
       flex-direction:column;
+      justify-content:space-between;
       gap:14px;
     }
-    .kpi{
-      border:1px solid var(--stroke);
-      background: rgba(0,0,0,.18);
-      border-radius: 16px;
-      padding:14px;
+    .side h2{
+      margin:0;
+      font-size:18px;
+      letter-spacing:-0.01em;
     }
-    .kpi .t{font-size:12px; color:var(--muted); margin-bottom:6px;}
-    .kpi .v{font-size:16px; font-weight:650; line-height:1.35;}
-    .steps{
-      margin-top:8px;
+    .bullets{
+      margin:10px 0 0;
+      padding:0;
+      list-style:none;
       display:grid;
       gap:10px;
     }
-    .step{
-      display:flex; gap:10px;
-      padding:12px;
-      border-radius: 14px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.03);
+    .bullets li{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      color:#e5e7eb;
+      font-size:14px;
+      line-height:1.45;
     }
     .dot{
-      width:10px; height:10px; border-radius:99px;
-      margin-top:6px;
-      background: rgba(34,197,94,1);
-      box-shadow: 0 10px 26px rgba(34,197,94,.18);
+      width:10px;height:10px;border-radius:999px;
+      background:rgba(34,197,94,1);
+      margin-top:5px;
       flex:0 0 auto;
     }
-    .step b{display:block; margin-bottom:2px;}
-    footer{
-      margin-top:26px;
-      color: rgba(234,240,255,.55);
-      font-size:12px;
+    .audience{
+      margin-top:10px;
+      color:#cbd5e1;
+      font-size:13px;
+    }
+    .footer{
+      margin-top:14px;
       display:flex;
       justify-content:space-between;
-      gap:12px;
+      gap:10px;
       flex-wrap:wrap;
+      color:#9ca3af;
+      font-size:12px;
     }
+    .footer a{color:#93c5fd; text-decoration:none}
+    .footer a:hover{text-decoration:underline}
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <header>
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div>Évidencia</div>
-      </div>
-      <div class="pill">Preuve numérique • Empreinte • Horodatage</div>
-    </header>
+    <div class="container">
 
-    <main>
-      <div class="hero">
-        <section class="h-card">
-          <div class="h-content">
-            <h1>Rends tes preuves numériques incontestables.</h1>
-            <p class="sub">
-              Évidencia scelle une <b>empreinte cryptographique</b> de tes fichiers (photo, vidéo, document) et génère une
-              <b>preuve vérifiable publiquement</b>. Objectif : crédibilité immédiate, traçabilité, et intégrité des contenus.
-            </p>
-
-            <div class="cta-row">
-              <a class="btn btn-primary" href="/public/capture.html">
-                Démarrer une certification
-                <span aria-hidden="true">→</span>
-              </a>
-              <a class="btn btn-secondary" href="/public/verify.html">
-                Vérifier une preuve
-              </a>
-            </div>
-
-            <div class="mini" aria-label="points clés">
-              <span>Hash (SHA-256)</span>
-              <span>Horodatage</span>
-              <span>Preuve publique</span>
-              <span>Process simple</span>
-            </div>
+      <!-- LEFT -->
+      <section class="panel">
+        <div class="brand">
+          <img src="/public/Logo.png" alt="Évidencia" />
+          <div>
+            <div style="font-weight:800; letter-spacing:.02em;">ÉVIDENCIA</div>
+            <div style="color:var(--muted); font-size:13px;">La preuve numérique infalsifiable</div>
           </div>
-        </section>
+        </div>
 
-        <aside class="h-card side">
-          <div class="kpi">
-            <div class="t">Positionnement</div>
-            <div class="v">Produit d’intégrité et de conformité — pas du marketing.</div>
+        <h1>🔒 La preuve numérique infalsifiable</h1>
+        <p class="sub">
+          Capture une photo. Elle est immédiatement <strong>hashée</strong>, <strong>horodatée</strong> et
+          <strong>vérifiable publiquement</strong>. Toute modification invalide la preuve.
+        </p>
+
+        <div class="ctaRow">
+          <a class="btn btnPrimary" href="/public/capture.html">Prendre une photo certifiée</a>
+          <a class="btn btnGhost" href="/public/verify.html">Vérifier une preuve</a>
+        </div>
+
+        <div class="grid3">
+          <div class="step">
+            <p class="t">📸 Capture</p>
+            <p>Utilise la caméra de ton smartphone. Aucun paramétrage.</p>
           </div>
-
-          <div class="kpi">
-            <div class="t">Cas d’usage</div>
-            <div class="v">Assureurs • Journalistes • Enquêtes • Litiges • Conformité</div>
+          <div class="step">
+            <p class="t">⏱️ Certification</p>
+            <p>Hash + horodatage, générés automatiquement à la prise de vue.</p>
           </div>
-
-          <div class="kpi">
-            <div class="t">Comment ça marche</div>
-            <div class="steps">
-              <div class="step">
-                <div class="dot"></div>
-                <div><b>1. Capture / Upload</b>Tu fournis un fichier.</div>
-              </div>
-              <div class="step">
-                <div class="dot"></div>
-                <div><b>2. Empreinte + horodatage</b>Le fichier est scellé (hash).</div>
-              </div>
-              <div class="step">
-                <div class="dot"></div>
-                <div><b>3. Preuve publique</b>URL + QR pour vérifier.</div>
-              </div>
-            </div>
+          <div class="step">
+            <p class="t">🌍 Preuve publique</p>
+            <p>Un lien vérifiable, partageable, opposable techniquement.</p>
           </div>
-        </aside>
-      </div>
+        </div>
+      </section>
 
-      <footer>
-        <div>© <span id="y"></span> Évidencia.tech</div>
-        <div>Intégrité • Traçabilité • Vérifiabilité</div>
-      </footer>
-    </main>
+      <!-- RIGHT -->
+      <aside class="side">
+        <div>
+          <h2>Ce que prouve Évidencia</h2>
+          <ul class="bullets">
+            <li><span class="dot"></span><span>Intégrité : le hash lie la preuve au fichier original.</span></li>
+            <li><span class="dot"></span><span>Antériorité : l’horodatage fige le moment de la capture.</span></li>
+            <li><span class="dot"></span><span>Vérification : contrôle public indépendant via la page de preuve.</span></li>
+          </ul>
+
+          <div class="audience">Journalistes · Assureurs · Experts · Particuliers</div>
+        </div>
+
+        <div class="footer">
+          <div>© Évidencia</div>
+          <div><a href="/public/capture.html">Créer une preuve</a></div>
+        </div>
+      </aside>
+
+    </div>
   </div>
-
-  <script>
-    document.getElementById('y').textContent = new Date().getFullYear();
-  </script>
 </body>
 </html>
