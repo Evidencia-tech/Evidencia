@@ -143,7 +143,9 @@ app.get('/api/history', requireApiKey, async (_req, res) => {
     res.status(500).json({ message: 'Unable to fetch history', error: error.message });
   }
 });
-
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Evidencia backend listening on port ${PORT}`);
