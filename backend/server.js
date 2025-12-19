@@ -41,6 +41,10 @@ app.set('trust proxy', 1);
 
 app.use(express.static(path.join(__dirname, '../public')));
 
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }
