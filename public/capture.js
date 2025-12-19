@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function uploadFile(file) {
-    setStatus('Photo détectée ✅ envoi...', 'success');
+    setStatus('Photo détectée ⏳ envoi...', '✅ success');
     captureButton.disabled = true;
 
     const formData = new FormData();
