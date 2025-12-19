@@ -148,6 +148,9 @@ app.get('/api/history', requireApiKey, async (_req, res) => {
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
+app.get('/api/ping', (_req, res) => {
+  res.status(200).send('pong');
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Evidencia backend listening on port ${PORT}`);
