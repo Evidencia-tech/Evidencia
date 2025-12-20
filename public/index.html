@@ -167,20 +167,23 @@
   letter-spacing: -0.015em;
   color: #93c5fd;
 }
-     .proof-block:not(:last-of-type){
-  padding-bottom: 14px;
+.proof-block:not(:last-of-type){
+  padding-bottom: 10px; /* 14 -> 10 pour compacter un peu l'ensemble */
   border-bottom: 2px solid rgba(255,255,255,0.06);
 }
-    .proof-block{
- margin-top: 6px;
-  margin-bottom: 6px;
-  font-size:14px;
-  line-height:1.1;
-  color:#cbd5e1; 
+
+.proof-block{
+  margin-top: 10px;     /* 1 -> 10 : espace ENTRE les blocs, pas dans le bloc */
+  margin-bottom: 0;     /* on évite l’empilement margin + padding */
+  font-size: 14px;
+  line-height: 1.55;    /* IMPORTANT : lisible + cohérent */
+  color: #cbd5e1;
 }
-  .proof-block strong{
+
+.proof-block strong{
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 2px;   /* 4 -> 2 : rapproche titre/texte */
+  line-height: 1.15;    /* le titre est compact, propre */
   font-weight: 700;
   font-size: 14.5px;
   letter-spacing: -0.01em;
