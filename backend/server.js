@@ -39,7 +39,7 @@ const resolveImageUrl = (id) => {
 const app = express();
 app.set('trust proxy', 1);
 
-app.use(express.static(path.join(__dirname, '../public')));
+app.use('/public', express.static(path.join(__dirname, '../public')));
 
 app.get('/', (_req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
