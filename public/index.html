@@ -236,6 +236,20 @@
   text-transform: uppercase;
   color: #93c5fd;
 }
+    .audience-tags span{
+  position: relative;
+  padding-right: 14px;
+}
+
+.audience-tags span:not(:last-child)::after{
+  content: "|";
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #93c5fd;
+  font-weight: 400;
+}
     .footer{
       margin-top:14px;
       display:flex;
