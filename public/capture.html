@@ -109,7 +109,7 @@
       <img src="/public/Logo.png" alt="Logo Évidencia" />
     </div>
     <div class="card">
-      <h1>Prendre une photo certifiée</h1>
+     <h1>Capture certifiée</h1>
       <p>La caméra s’ouvre, la preuve est capturée et certifiée instantanément.
 Vous êtes ensuite redirigé vers sa page de vérification publique.</p>
  <div class="actions" style="margin-top:12px;">
@@ -131,6 +131,10 @@ Vous êtes ensuite redirigé vers sa page de vérification publique.</p>
         <div class="label">Aperçu</div>
         <img id="previewImage" alt="Aperçu de la photo" />
       </div>
+<div class="preview" id="videoPreviewWrapper">
+  <div class="label">Aperçu vidéo</div>
+  <video id="previewVideo" controls playsinline style="width:100%; border-radius:12px; border:1px solid var(--border);"></video>
+</div>
 
       <div class="result" id="result">
         <div class="row"><div class="label">Proof ID</div><div class="value" id="proofId">-</div></div>
