@@ -14,12 +14,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 const videoWrapper = document.getElementById("videoWrapper");
   const viewTxBtn = document.getElementById("viewTx");
 
-  // Debug visible (pour être sûr que le JS tourne)
-  const badge = document.createElement("div");
-  badge.textContent = "VERIFY JS OK";
-  badge.style.cssText =
-    "position:fixed;bottom:10px;left:10px;background:#111;color:#fff;padding:6px 10px;border-radius:10px;z-index:999999";
-  document.body.appendChild(badge);
 
   if (pid) pid.textContent = id || "Missing id";
 
