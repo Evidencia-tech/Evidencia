@@ -1,5 +1,6 @@
-// Verify.js — VERSION CORRIGÉE (URLs médias robustes + iOS/webview load() + fallback champs)
-// Remplace TOUT le contenu de ton Verify.js par ce fichier.
+// verify.js — VERSION CORRIGÉE INTÉGRALE
+// Objectif: NE JAMAIS utiliser data.uri si c’est un lien vers verify.html
+// Priorité: mediaUrl / imageUrl (fichier) -> sinon filename -> sinon uri (si et seulement si c’est un fichier)
 
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
@@ -28,29 +29,37 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (pid) pid.textContent = id || "Missing id";
   if (!id) return;
 
-  // Bouton "nouvelle capture"
+  // Bouton nouvelle capture
   if (newCaptureBtn) {
     newCaptureBtn.onclick = () => {
       window.location.href = "/public/capture.html";
     };
   }
 
-  // On cache tout au début
+  // Cache tout au début
   hide(imageWrapper);
   hide(videoWrapper);
 
   // ---------------------------
-  // NORMALISATION URL MEDIA (clé)
+  // Helpers
   // ---------------------------
+  const formatTimestamp = (ts) => {
+    if (!ts) return "-";
+    if (typeof ts === "number") {
+      const d = new Date(ts * 1000);
+      return isNaN(d.getTime()) ? "-" : d.toISOString();
+    }
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? String(ts) : d.toISOString();
+  };
+
   const normalizeMediaUrl = (u) => {
     if (!u) return "";
 
-    // 1) Déjà absolu http(s)
+    // absolu http(s)
     if (/^https?:\/\//i.test(u)) return u;
 
-    // 2) Si backend renvoie un chemin disque ou file:// (mauvais)
-    // ex: /home/runner/.../uploads/abc.mp4 -> /uploads/abc.mp4
-    // ex: C:\...\uploads\abc.jpg -> /uploads/abc.jpg
+    // chemin disque / file:// (mauvais retour backend) => on tente /uploads/<filename>
     if (
       u.startsWith("file:") ||
       u.includes("/home/") ||
@@ -62,42 +71,40 @@ document.addEventListener("DOMContentLoaded", async () => {
       return `${origin}/uploads/${encodeURIComponent(fileName)}`;
     }
 
-    // 3) Nettoyage chemins fréquents
-    // public/uploads/xxx -> /public/uploads/xxx
+    // public/... => /public/...
     if (u.startsWith("public/")) u = "/" + u;
-    // uploads/xxx -> /uploads/xxx
+    // uploads/... => /uploads/...
     if (u.startsWith("uploads/")) u = "/" + u;
 
-    // 4) Si ça contient déjà "/uploads/" quelque part, on coupe au bon endroit
+    // si on a /uploads/ au milieu
     const idx = u.indexOf("/uploads/");
     if (idx > 0) u = u.slice(idx);
 
-    // 5) Si commence par /
-    if (u.startsWith("/")) return origin + u;
+    // si on a /public/ au milieu
+    const idx2 = u.indexOf("/public/");
+    if (idx2 > 0) u = u.slice(idx2);
 
-    // 6) fallback
+    if (u.startsWith("/")) return origin + u;
     return origin + "/" + u;
   };
 
-  // ---------------------------
-  // Helpers timestamp (epoch/sec vs ISO)
-  // ---------------------------
-  const formatTimestamp = (ts) => {
-    if (!ts) return "-";
-
-    // Nombre => probablement epoch en secondes
-    if (typeof ts === "number") {
-      const d = new Date(ts * 1000);
-      return isNaN(d.getTime()) ? "-" : d.toISOString();
-    }
-
-    // String => essayer parse ISO
-    const d = new Date(ts);
-    return isNaN(d.getTime()) ? String(ts) : d.toISOString();
+  const looksLikeVerifyPage = (u) => {
+    if (!u) return false;
+    const s = String(u);
+    return s.includes("/public/verify.html") || s.includes("verify.html?id=");
   };
 
+  const looksLikeMediaFile = (u) => {
+    if (!u) return false;
+    const s = String(u).toLowerCase();
+    // extensions médias courantes (ajuste si besoin)
+    return /\.(jpg|jpeg|png|gif|webp|mp4|webm|mov|m4v)(\?.*)?$/.test(s);
+  };
+
+  // ---------------------------
+  // Main
+  // ---------------------------
   try {
-    // API verify
     const res = await fetch(`${origin}/api/verify/${encodeURIComponent(id)}`);
     if (!res.ok) {
       console.error("VERIFY API error:", res.status);
@@ -106,20 +113,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const data = await res.json();
 
-    // ---------------------------
-    // META
-    // ---------------------------
+    // ---- Meta ----
     if (hashEl) hashEl.textContent = data.hash || "-";
     if (timeEl) timeEl.textContent = formatTimestamp(data.timestamp);
     if (txEl) txEl.textContent = data.txHash || "-";
 
-    // QR : certains backends renvoient déjà une url absolue ou un dataURL
     if (qrImg) {
       const q = data.qrUrl || data.qr || "";
       qrImg.src = q;
     }
 
-    // Bouton Polygonscan (si txHash réel)
     if (viewTxBtn) {
       if (data.txHash && data.txHash !== "demo-no-chain") {
         viewTxBtn.disabled = false;
@@ -130,49 +133,60 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    // ---------------------------
-    // MEDIA (photo + vidéo)
-    // ---------------------------
+    // ---- Media ----
     const mime = String(data.mimetype || "").toLowerCase();
 
-    // Détection vidéo plus robuste:
-    // - mimetype video/*
-    // - ou extension dans l'url
-    const rawUrl =
-      data.uri ||
-      data.imageUrl ||
+    // Priorité: mediaUrl / imageUrl (doivent être des fichiers)
+    let candidate =
       data.mediaUrl ||
+      data.imageUrl ||
       data.fileUrl ||
       data.url ||
       "";
 
-    // Si backend renvoie juste un filename
-    const candidate = rawUrl || (data.filename ? `uploads/${data.filename}` : "");
+    // Si le backend ne renvoie pas d’URL fichier, on tente filename (si existant)
+    // (selon ton backend, filename est l’originalname; ça peut ne pas aider)
+    if (!candidate && data.filename && looksLikeMediaFile(data.filename)) {
+      candidate = `uploads/${data.filename}`;
+    }
 
+    // En dernier recours seulement: data.uri, MAIS PAS si c’est verify.html
+    if (!candidate && data.uri && !looksLikeVerifyPage(data.uri)) {
+      // on ne prend uri que si ça ressemble à un fichier
+      if (looksLikeMediaFile(data.uri)) candidate = data.uri;
+    }
+
+    // Normalisation
     const mediaUrl = normalizeMediaUrl(candidate);
 
-    // Détection vidéo par mime ou extension
+    // Détection vidéo
     const isVideo =
       mime.startsWith("video/") ||
       /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(mediaUrl);
 
-    // DEBUG (à garder 1-2 jours)
     console.log("VERIFY media:", {
       id,
-      rawUrl,
-      candidate,
-      mediaUrl,
       mimetype: data.mimetype,
+      // ce que le backend donne
+      mediaUrlFromApi: data.mediaUrl,
+      imageUrlFromApi: data.imageUrl,
+      uriFromApi: data.uri,
+      // ce que le front choisit
+      chosenCandidate: candidate,
+      resolvedMediaUrl: mediaUrl,
       isVideo
     });
 
-    // Si pas d'URL, on ne peut pas afficher de preview
-    if (!mediaUrl) return;
+    // Stop si on n’a toujours pas un fichier
+    if (!mediaUrl || looksLikeVerifyPage(mediaUrl) || !looksLikeMediaFile(mediaUrl)) {
+      console.error("NO VALID MEDIA URL (backend must return mediaUrl/imageUrl pointing to a file).");
+      return;
+    }
 
     if (isVideo) {
       if (!proofVideo || !videoWrapper) return;
 
-      // Certains webviews iOS ont besoin d’un reset + load()
+      // reset iOS/webviews
       try {
         proofVideo.pause();
         proofVideo.removeAttribute("src");
@@ -181,7 +195,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       proofVideo.src = mediaUrl;
 
-      // IMPORTANT iOS / Instagram webview : force chargement
       try {
         proofVideo.load();
       } catch (e) {}
