@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const qrImg = document.getElementById("qr");
   const proofImage = document.getElementById("proofImage");
   const imageWrapper = document.getElementById("imageWrapper");
+  const proofVideo = document.getElementById("proofVideo");
+const videoWrapper = document.getElementById("videoWrapper");
   const viewTxBtn = document.getElementById("viewTx");
 
   // Debug visible (pour être sûr que le JS tourne)
@@ -38,11 +40,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (qrImg && (data.qrUrl || data.qr)) qrImg.src = data.qrUrl || data.qr;
 
-    if (data.imageUrl && proofImage && imageWrapper) {
-      proofImage.src = data.imageUrl;
-      imageWrapper.style.display = "block";
-    }
+  // Media: image ou vidéo (V1)
+const mediaType = data.type; // "photo" | "video" (si dispo)
+const imageUrl = data.imageUrl;
+const videoUrl = data.videoUrl || data.mediaUrl || data.fileUrl; // selon ce que renvoie ton API
 
+// reset affichage
+if (imageWrapper) imageWrapper.style.display = "none";
+if (videoWrapper) videoWrapper.style.display = "none";
+
+if ((mediaType === "video" || (videoUrl && !imageUrl)) && proofVideo && videoWrapper) {
+  proofVideo.src = videoUrl;
+  videoWrapper.style.display = "block";
+} else if (imageUrl && proofImage && imageWrapper) {
+  proofImage.src = imageUrl;
+  imageWrapper.style.display = "block";
+}
     if (viewTxBtn) {
       if (data.txHash && data.txHash !== "demo-no-chain") {
         viewTxBtn.disabled = false;
