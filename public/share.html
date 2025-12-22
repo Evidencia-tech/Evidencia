@@ -20,52 +20,72 @@
       --error:#f87171;
       --cream:#f6efe3;
     }
+
     *{box-sizing:border-box}
-    .brand-logo{
-  height: 320px;
-  width: auto;
-  display: block;
-  object-fit: contain;
-}
+
     body{
       margin:0;
       font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       background:var(--bg);
       color:#0b1220;
     }
+
     .wrap{
       max-width:1100px;
       margin:0 auto;
       padding:24px 16px 40px;
     }
-.top{
-  position: relative;
-  display: flex;
-  align-items: center;
-  margin-bottom: 14px;
-}
-    .brand{
+
+    /* Header simple : gauche vide, bouton Retour à droite */
+    .top{
       display:flex;
-      gap:12px;
       align-items:center;
+      justify-content:space-between;
+      margin-bottom:14px;
+      min-height:44px;
     }
-    .logo{
-      width:44px;height:44px;
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    button{
+      appearance:none;
+      border:none;
+      cursor:pointer;
       border-radius:14px;
-      background:#0b1220;
-      display:grid;place-items:center;
-      color:white;font-weight:800;
-      letter-spacing:0.5px;
-    }
-    .h1{
-      font-size:18px;
+      padding:11px 12px;
       font-weight:800;
-      letter-spacing:0.8px;
-    }
-    .sub{
-      color:#465063;
       font-size:13px;
-      margin-top:2px;
+    }
+
+    .primary{
+      background:linear-gradient(180deg, #79b8ff, var(--primary));
+      color:#07111f;
+    }
+
+    /* Retour plus lisible (gris) */
+    .ghost{
+      background: rgba(17, 24, 39, 0.08);
+      color: #374151;
+      border: 1px solid rgba(17, 24, 39, 0.18);
+    }
+    .ghost:hover{
+      background: rgba(17, 24, 39, 0.12);
+    }
+
+    .danger{
+      background:rgba(248,113,113,0.18);
+      color:#ffd7d7;
+      border:1px solid rgba(248,113,113,0.22);
+    }
+
+    .small{
+      font-size:12px;
+      padding:9px 10px;
+      border-radius:12px;
     }
 
     .panel{
@@ -82,12 +102,29 @@
       padding:16px;
       backdrop-filter: blur(6px);
     }
+
+    /* Logo centré dans la colonne gauche, comme sur tes autres pages */
+    .brand-block{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding: 6px 0 14px;
+    }
+
+    .brand-logo{
+      height: 320px;    /* ajuste 80–120 selon rendu */
+      width: auto;
+      display:block;
+      object-fit:contain;
+    }
+
     .preview .status{
       display:flex;
       gap:10px;
       align-items:center;
       margin-bottom:12px;
     }
+
     .pill{
       display:inline-flex;
       gap:8px;
@@ -100,10 +137,12 @@
       font-size:12px;
       border:1px solid rgba(34,197,94,0.22);
     }
+
     .meta{
       color:#4b5563;
       font-size:12px;
     }
+
     .media{
       width:100%;
       border-radius:16px;
@@ -111,6 +150,7 @@
       background:#0b1220;
       border:1px solid rgba(0,0,0,0.08);
     }
+
     .media img, .media video{
       width:100%;
       display:block;
@@ -124,6 +164,7 @@
       grid-template-columns:1fr;
       gap:12px;
     }
+
     .card{
       background:var(--card);
       color:var(--text);
@@ -131,78 +172,27 @@
       border-radius:20px;
       padding:16px;
     }
+
     .card h3{
       margin:0 0 6px;
       font-size:14px;
       font-weight:800;
       letter-spacing:0.2px;
     }
+
     .card p{
       margin:0 0 12px;
       color:var(--muted);
       font-size:12px;
       line-height:1.4;
     }
-    .row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .top{
-  position: relative;
-  display: flex;
-  align-items: center;
-  margin-bottom: 14px;
-}
 
-/* centrage du logo UNIQUEMENT dans le header */
-.top .brand{
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* bouton retour à droite */
-.top .row{
-  margin-left: auto;
-}
-    button{
-      appearance:none;
-      border:none;
-      cursor:pointer;
-      border-radius:14px;
-      padding:11px 12px;
-      font-weight:800;
-      font-size:13px;
-    }
-    .primary{
-      background:linear-gradient(180deg, #79b8ff, var(--primary));
-      color:#07111f;
-    }
-    .ghost{
-  background: rgba(17, 24, 39, 0.08);
-  color: #374151;
-  border: 1px solid rgba(17, 24, 39, 0.18);
-}
-
-.ghost:hover{
-  background: rgba(17, 24, 39, 0.12);
-}
-    .danger{
-      background:rgba(248,113,113,0.18);
-      color:#ffd7d7;
-      border:1px solid rgba(248,113,113,0.22);
-    }
-    .small{
-      font-size:12px;
-      padding:9px 10px;
-      border-radius:12px;
-    }
     .hint{
       margin-top:10px;
       font-size:12px;
       color:#4b5563;
     }
+
     .mono{
       font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
       font-size:12px;
@@ -221,19 +211,24 @@
 </head>
 
 <body>
-<div class="wrap">
-  <div class="top">
-    <div class="brand">
-      <img src="/public/Logo.png" alt="Évidencia" class="brand-logo">
-    </div>
+  <div class="wrap">
 
-    <div class="row">
-      <button class="ghost small" id="backBtn">Retour</button>
+    <!-- Header minimal : bouton Retour à droite -->
+    <div class="top">
+      <div></div>
+      <div class="row">
+        <button class="ghost small" id="backBtn">Retour</button>
+      </div>
     </div>
-  </div>
 
     <div class="panel">
       <div class="preview">
+
+        <!-- Logo dans la colonne gauche (comme tes autres pages) -->
+        <div class="brand-block">
+          <img src="/public/Logo.png" alt="Évidencia" class="brand-logo">
+        </div>
+
         <div class="status">
           <span class="pill">✔ Preuve validée</span>
           <span class="meta" id="metaLine">Chargement…</span>
@@ -248,7 +243,7 @@
       <div class="actions">
         <div class="card">
           <h3>Partager le lien</h3>
-          <p>Copier ou partager le lien de vérification. C’est l’action n°1.</p>
+          <p>Copier ou partager le lien de vérification.</p>
           <div class="row">
             <button class="primary" id="copyLinkBtn">Copier le lien</button>
             <button class="ghost" id="nativeShareBtn">Partager</button>
