@@ -1,3 +1,6 @@
+// Verify.js — VERSION CORRIGÉE (URLs médias robustes + iOS/webview load() + fallback champs)
+// Remplace TOUT le contenu de ton Verify.js par ce fichier.
+
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
@@ -18,33 +21,83 @@ document.addEventListener("DOMContentLoaded", async () => {
   const viewTxBtn = document.getElementById("viewTx");
   const newCaptureBtn = document.getElementById("newCapture");
 
+  const hide = (el) => el && (el.style.display = "none");
+  const show = (el) => el && (el.style.display = "block");
+
+  // Affichage id
   if (pid) pid.textContent = id || "Missing id";
   if (!id) return;
 
+  // Bouton "nouvelle capture"
   if (newCaptureBtn) {
     newCaptureBtn.onclick = () => {
       window.location.href = "/public/capture.html";
     };
   }
 
-  const hide = (el) => el && (el.style.display = "none");
-  const show = (el) => el && (el.style.display = "block");
-
-  const normalizeUrl = (u) => {
-    if (!u) return "";
-    // déjà absolu
-    if (/^https?:\/\//i.test(u)) return u;
-    // commence par /
-    if (u.startsWith("/")) return origin + u;
-    // sinon on ajoute / entre origin et chemin
-    return origin + "/" + u;
-  };
-
-  // on cache tout au début
+  // On cache tout au début
   hide(imageWrapper);
   hide(videoWrapper);
 
+  // ---------------------------
+  // NORMALISATION URL MEDIA (clé)
+  // ---------------------------
+  const normalizeMediaUrl = (u) => {
+    if (!u) return "";
+
+    // 1) Déjà absolu http(s)
+    if (/^https?:\/\//i.test(u)) return u;
+
+    // 2) Si backend renvoie un chemin disque ou file:// (mauvais)
+    // ex: /home/runner/.../uploads/abc.mp4 -> /uploads/abc.mp4
+    // ex: C:\...\uploads\abc.jpg -> /uploads/abc.jpg
+    if (
+      u.startsWith("file:") ||
+      u.includes("/home/") ||
+      u.includes("\\") ||
+      u.includes(":\\")
+    ) {
+      const fileName = (u.split("/").pop() || "").split("\\").pop();
+      if (!fileName) return "";
+      return `${origin}/uploads/${encodeURIComponent(fileName)}`;
+    }
+
+    // 3) Nettoyage chemins fréquents
+    // public/uploads/xxx -> /public/uploads/xxx
+    if (u.startsWith("public/")) u = "/" + u;
+    // uploads/xxx -> /uploads/xxx
+    if (u.startsWith("uploads/")) u = "/" + u;
+
+    // 4) Si ça contient déjà "/uploads/" quelque part, on coupe au bon endroit
+    const idx = u.indexOf("/uploads/");
+    if (idx > 0) u = u.slice(idx);
+
+    // 5) Si commence par /
+    if (u.startsWith("/")) return origin + u;
+
+    // 6) fallback
+    return origin + "/" + u;
+  };
+
+  // ---------------------------
+  // Helpers timestamp (epoch/sec vs ISO)
+  // ---------------------------
+  const formatTimestamp = (ts) => {
+    if (!ts) return "-";
+
+    // Nombre => probablement epoch en secondes
+    if (typeof ts === "number") {
+      const d = new Date(ts * 1000);
+      return isNaN(d.getTime()) ? "-" : d.toISOString();
+    }
+
+    // String => essayer parse ISO
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? String(ts) : d.toISOString();
+  };
+
   try {
+    // API verify
     const res = await fetch(`${origin}/api/verify/${encodeURIComponent(id)}`);
     if (!res.ok) {
       console.error("VERIFY API error:", res.status);
@@ -53,27 +106,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const data = await res.json();
 
-    // ---- Meta ----
+    // ---------------------------
+    // META
+    // ---------------------------
     if (hashEl) hashEl.textContent = data.hash || "-";
-
-    if (timeEl) {
-      if (data.timestamp) {
-        const d = typeof data.timestamp === "number"
-          ? new Date(data.timestamp * 1000)
-          : new Date(data.timestamp);
-        timeEl.textContent = isNaN(d.getTime()) ? "-" : d.toISOString();
-      } else {
-        timeEl.textContent = "-";
-      }
-    }
-
+    if (timeEl) timeEl.textContent = formatTimestamp(data.timestamp);
     if (txEl) txEl.textContent = data.txHash || "-";
 
+    // QR : certains backends renvoient déjà une url absolue ou un dataURL
     if (qrImg) {
       const q = data.qrUrl || data.qr || "";
       qrImg.src = q;
     }
 
+    // Bouton Polygonscan (si txHash réel)
     if (viewTxBtn) {
       if (data.txHash && data.txHash !== "demo-no-chain") {
         viewTxBtn.disabled = false;
@@ -84,30 +130,72 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    // ---- Media (photo + vidéo) ----
-    const mime = (data.mimetype || "").toLowerCase();
-    const isVideo = mime.startsWith("video/");
+    // ---------------------------
+    // MEDIA (photo + vidéo)
+    // ---------------------------
+    const mime = String(data.mimetype || "").toLowerCase();
 
-    // chez toi, les champs fiables sont: uri + imageUrl
-    const rawUrl = data.uri || data.imageUrl || "";
-    const mediaUrl = normalizeUrl(rawUrl);
+    // Détection vidéo plus robuste:
+    // - mimetype video/*
+    // - ou extension dans l'url
+    const rawUrl =
+      data.uri ||
+      data.imageUrl ||
+      data.mediaUrl ||
+      data.fileUrl ||
+      data.url ||
+      "";
 
-    // DEBUG utile si ça ne charge pas (tu peux supprimer après)
-    console.log("VERIFY media:", { rawUrl, mediaUrl, mimetype: data.mimetype });
+    // Si backend renvoie juste un filename
+    const candidate = rawUrl || (data.filename ? `uploads/${data.filename}` : "");
 
-    // IMPORTANT : si mediaUrl est vide, on ne touche pas l’affichage (sinon ça “disparaît”)
+    const mediaUrl = normalizeMediaUrl(candidate);
+
+    // Détection vidéo par mime ou extension
+    const isVideo =
+      mime.startsWith("video/") ||
+      /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(mediaUrl);
+
+    // DEBUG (à garder 1-2 jours)
+    console.log("VERIFY media:", {
+      id,
+      rawUrl,
+      candidate,
+      mediaUrl,
+      mimetype: data.mimetype,
+      isVideo
+    });
+
+    // Si pas d'URL, on ne peut pas afficher de preview
     if (!mediaUrl) return;
 
     if (isVideo) {
       if (!proofVideo || !videoWrapper) return;
+
+      // Certains webviews iOS ont besoin d’un reset + load()
+      try {
+        proofVideo.pause();
+        proofVideo.removeAttribute("src");
+        proofVideo.load();
+      } catch (e) {}
+
       proofVideo.src = mediaUrl;
+
+      // IMPORTANT iOS / Instagram webview : force chargement
+      try {
+        proofVideo.load();
+      } catch (e) {}
+
       proofVideo.onerror = () => console.error("VIDEO LOAD ERROR:", mediaUrl);
+
       show(videoWrapper);
       hide(imageWrapper);
     } else {
       if (!proofImage || !imageWrapper) return;
+
       proofImage.src = mediaUrl;
       proofImage.onerror = () => console.error("IMAGE LOAD ERROR:", mediaUrl);
+
       show(imageWrapper);
       hide(videoWrapper);
     }
