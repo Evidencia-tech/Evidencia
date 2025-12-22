@@ -27,13 +27,15 @@ db.serialize(() => {
       txHash TEXT,
       uri TEXT,
       qr TEXT,
-      imageUrl TEXT
+      imageUrl TEXT,
+      mediaUrl TEXT
     )
   `);
 
-  db.run(`ALTER TABLE proofs ADD COLUMN imageUrl TEXT`, (err) => {
+  // ✅ Migration safe: ajouter mediaUrl si la table existait déjà
+  db.run(`ALTER TABLE proofs ADD COLUMN mediaUrl TEXT`, (err) => {
     if (err && !err.message.includes('duplicate column name')) {
-      console.error('Failed to ensure imageUrl column', err);
+      console.error('Failed to ensure mediaUrl column', err);
     }
   });
 });
