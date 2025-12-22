@@ -95,13 +95,19 @@
       align-items:start;
     }
 
-    .preview{
-      background:rgba(255,255,255,0.55);
-      border:1px solid rgba(0,0,0,0.08);
-      border-radius:22px;
-      padding:16px;
-      backdrop-filter: blur(6px);
-    }
+   .preview{
+  background: rgba(255, 255, 255, 0.35);      /* plus transparent */
+  border: 1px solid rgba(17, 24, 39, 0.10);    /* bord plus doux */
+  border-radius: 22px;
+  padding: 16px;
+
+  backdrop-filter: blur(12px);                /* glass effect */
+  -webkit-backdrop-filter: blur(12px);        /* Safari */
+
+  box-shadow:
+    0 10px 30px rgba(17, 24, 39, 0.08),        /* profondeur */
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);   /* highlight interne */
+}
 
     /* Logo centré dans la colonne gauche, comme sur tes autres pages */
     .brand-block{
