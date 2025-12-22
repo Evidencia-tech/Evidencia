@@ -33,6 +33,8 @@ const videoWrapper = document.getElementById("videoWrapper");
     }
 
     const data = await res.json();
+    console.log("VERIFY DATA:", data);
+badge.textContent = "KEYS: " + Object.keys(data).join(", ");
 
     if (hashEl) hashEl.textContent = data.hash || "";
     if (timeEl && data.timestamp) timeEl.textContent = new Date(data.timestamp * 1000).toISOString();
