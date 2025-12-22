@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const timeEl = document.getElementById("time");
   const txEl = document.getElementById("tx");
   const qrImg = document.getElementById("qr");
-  const viewTxBtn = document.getElementById("viewTx");
 
   const proofImage = document.getElementById("proofImage");
   const imageWrapper = document.getElementById("imageWrapper");
@@ -16,47 +15,31 @@ document.addEventListener("DOMContentLoaded", async () => {
   const proofVideo = document.getElementById("proofVideo");
   const videoWrapper = document.getElementById("videoWrapper");
 
+  const viewTxBtn = document.getElementById("viewTx");
+  const newCaptureBtn = document.getElementById("newCapture");
+
   if (pid) pid.textContent = id || "Missing id";
   if (!id) return;
 
-  const hide = (el) => { if (el) el.style.display = "none"; };
-  const show = (el) => { if (el) el.style.display = "block"; };
+  // Bouton nouvelle capture
+  if (newCaptureBtn) {
+    newCaptureBtn.onclick = () => {
+      window.location.href = "/public/capture.html";
+    };
+  }
 
-  const isAbsUrl = (u) => /^https?:\/\//i.test(u);
-  const normalizeUrl = (u) => {
-    if (!u) return "";
-    if (isAbsUrl(u)) return u;
-    // garantit un slash
-    if (u.startsWith("/")) return origin + u;
-    return origin + "/" + u;
-  };
+  const hide = el => el && (el.style.display = "none");
+  const show = el => el && (el.style.display = "block");
 
-  const extOf = (u) => {
-    try {
-      const clean = (u || "").split("?")[0].split("#")[0];
-      const m = clean.match(/\.([a-z0-9]+)$/i);
-      return m ? m[1].toLowerCase() : "";
-    } catch {
-      return "";
-    }
-  };
-
-  const isVideoExt = (ext) => ["webm", "mp4", "mov", "m4v", "avi"].includes(ext);
-
-  // État initial : on cache les 2 (le JS décidera)
   hide(imageWrapper);
   hide(videoWrapper);
 
   try {
     const res = await fetch(`${origin}/api/verify/${encodeURIComponent(id)}`);
-    if (!res.ok) {
-      console.error("VERIFY API error:", res.status);
-      return;
-    }
+    if (!res.ok) return;
 
     const data = await res.json();
 
-    // ---- Meta ----
     if (hashEl) hashEl.textContent = data.hash || "-";
 
     if (timeEl) {
@@ -65,16 +48,24 @@ document.addEventListener("DOMContentLoaded", async () => {
           ? new Date(data.timestamp * 1000)
           : new Date(data.timestamp);
         timeEl.textContent = isNaN(d.getTime()) ? "-" : d.toISOString();
-      } else {
-        timeEl.textContent = "-";
-      }
+      } else timeEl.textContent = "-";
     }
 
     if (txEl) txEl.textContent = data.txHash || "-";
 
-    if (qrImg) {
-      const q = data.qrUrl || data.qr || "";
-      qrImg.src = q;
+    if (qrImg) qrImg.src = data.qrUrl || data.qr || "";
+
+    const mime = (data.mimetype || "").toLowerCase();
+    const uri = data.uri || data.imageUrl || "";
+    const isVideo = mime.startsWith("video/");
+    const mediaUrl = uri.startsWith("http") ? uri : origin + uri;
+
+    if (isVideo) {
+      proofVideo.src = mediaUrl;
+      show(videoWrapper);
+    } else {
+      proofImage.src = mediaUrl;
+      show(imageWrapper);
     }
 
     if (viewTxBtn) {
@@ -87,46 +78,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    // ---- Media (robuste) ----
-    const mime = (data.mimetype || "").toLowerCase();
-    const uri = data.uri || data.imageUrl || "";
-    const mediaUrl = normalizeUrl(uri);
-
-    const ext = extOf(uri) || extOf(data.filename || "");
-    const isVideo = mime.startsWith("video/") || isVideoExt(ext);
-
-    // Fallbacks si jamais l’API ne renvoie pas uri
-    const fallbackVideo = `${origin}/uploads/${id}.webm`;
-    const fallbackImage = `${origin}/uploads/${id}.jpg`;
-
-    if (isVideo) {
-      if (!proofVideo || !videoWrapper) return;
-
-      // si pas d’URL, tente fallback direct
-      const src = mediaUrl || fallbackVideo;
-      proofVideo.src = src;
-
-      // si 404/format non supporté, on tente fallback
-      proofVideo.onerror = () => {
-        if (proofVideo.src !== fallbackVideo) proofVideo.src = fallbackVideo;
-      };
-
-      show(videoWrapper);
-      hide(imageWrapper);
-    } else {
-      if (!proofImage || !imageWrapper) return;
-
-      const src = mediaUrl || fallbackImage;
-      proofImage.src = src;
-
-      proofImage.onerror = () => {
-        if (proofImage.src !== fallbackImage) proofImage.src = fallbackImage;
-      };
-
-      show(imageWrapper);
-      hide(videoWrapper);
-    }
   } catch (e) {
-    console.error("VERIFY JS crash:", e);
+    console.error("VERIFY error:", e);
   }
 });
