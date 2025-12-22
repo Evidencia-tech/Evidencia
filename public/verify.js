@@ -65,8 +65,5 @@ if ((mediaType === "video" || (videoUrl && !imageUrl)) && proofVideo && videoWra
       }
     }
 
-    badge.textContent = "VERIFY: preuve chargée";
-  }
-
   load();
 });
