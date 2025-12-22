@@ -154,4 +154,195 @@ async function captureVideoFrameToDataUrl(videoUrl) {
   });
 }
 
-async function generateBadgedPng({ baseImageSrc,
+async function generateBadgedPng({ baseImageSrc, qrSrc, proofShortId }) {
+  const img = await loadImage(baseImageSrc);
+
+  const maxW = 1400;
+  const scale = Math.min(1, maxW / img.width);
+  const w = Math.round(img.width * scale);
+  const h = Math.round(img.height * scale);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, w, h);
+
+  const pad = Math.round(18 * scale + 8);
+  const boxW = Math.round(360 * scale);
+  const boxH = Math.round(120 * scale);
+  const x = w - boxW - pad;
+  const y = h - boxH - pad;
+
+  ctx.save();
+  ctx.globalAlpha = 0.92;
+  ctx.fillStyle = "#0b1220";
+  roundRect(ctx, x, y, boxW, boxH, Math.round(18 * scale));
+  ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `${Math.round(20 * scale)}px Inter, Arial, sans-serif`;
+  ctx.fillText("CERTIFIÉ", x + Math.round(16 * scale), y + Math.round(34 * scale));
+
+  ctx.font = `800 ${Math.round(26 * scale)}px Inter, Arial, sans-serif`;
+  ctx.fillText("ÉVIDENCIA", x + Math.round(16 * scale), y + Math.round(64 * scale));
+
+  ctx.font = `${Math.round(16 * scale)}px ui-monospace, Menlo, monospace`;
+  ctx.fillStyle = "#cbd5e1";
+  ctx.fillText(`ID: ${proofShortId}`, x + Math.round(16 * scale), y + Math.round(92 * scale));
+
+  if (qrSrc) {
+    try {
+      const qr = await loadImage(qrSrc);
+      const q = Math.round(86 * scale);
+      ctx.save();
+      ctx.globalAlpha = 0.98;
+      ctx.fillStyle = "#ffffff";
+      const qx = x + boxW - q - Math.round(14 * scale);
+      const qy = y + Math.round(18 * scale);
+      roundRect(ctx, qx - Math.round(6 * scale), qy - Math.round(6 * scale), q + Math.round(12 * scale), q + Math.round(12 * scale), Math.round(12 * scale));
+      ctx.fill();
+      ctx.drawImage(qr, qx, qy, q, q);
+      ctx.restore();
+    } catch (e) {}
+  }
+
+  return canvas.toDataURL("image/png");
+}
+
+/* ---------- UI ---------- */
+
+function renderMedia({ mediaUrl, mimetype }) {
+  const box = $("mediaBox");
+  box.innerHTML = "";
+
+  if (isVideo(mimetype, mediaUrl)) {
+    const el = document.createElement("video");
+    el.controls = true;
+    el.playsInline = true;
+    el.src = mediaUrl;
+    box.appendChild(el);
+  } else {
+    const el = document.createElement("img");
+    el.alt = "Preuve";
+    el.src = mediaUrl;
+    box.appendChild(el);
+  }
+}
+
+async function main() {
+  const id = getIdFromUrl();
+  if (!id) return alert("ID de preuve manquant.");
+
+  $("backBtn").addEventListener("click", () => history.back());
+
+  const data = await fetchVerify(id);
+
+  const mediaUrl = normalizeUrl(data.mediaUrl || "");
+  const qrSrc = data.qrUrl || data.qr || "";
+  const verifyUrl = `${window.location.origin}/public/verify.html?id=${encodeURIComponent(id)}`;
+
+  $("verifyUrlBox").textContent = verifyUrl;
+  $("metaLine").textContent = `ID ${shortenId(id)} · ${formatTimestamp(data.timestamp)}`;
+
+  if (!mediaUrl) return alert("mediaUrl manquant dans la preuve.");
+
+  renderMedia({ mediaUrl, mimetype: data.mimetype });
+
+  // 1) Partager lien
+  $("copyLinkBtn").addEventListener("click", async () => {
+    await copyToClipboard(verifyUrl);
+    $("copyLinkBtn").textContent = "Lien copié";
+    setTimeout(() => ($("copyLinkBtn").textContent = "Copier le lien"), 1200);
+  });
+
+  $("nativeShareBtn").addEventListener("click", async () => {
+    if (!navigator.share) return alert("Partage natif non disponible ici. Utilise Copier le lien.");
+    await navigator.share({
+      title: "Preuve certifiée Évidencia",
+      text: "Vérifie l’authenticité de cette preuve.",
+      url: verifyUrl
+    });
+  });
+
+  // 2) Télécharger original
+  $("downloadOriginalBtn").addEventListener("click", async () => {
+    const blob = await fetchAsBlob(mediaUrl);
+    const ext = (String(data.mimetype || "").split("/")[1] || "").replace("jpeg","jpg");
+    const defaultName = isVideo(data.mimetype, mediaUrl) ? `evidencia_${shortenId(id)}.${ext || "mp4"}` : `evidencia_${shortenId(id)}.${ext || "jpg"}`;
+    downloadBlob(blob, safeFilename(defaultName));
+  });
+
+  // 3) Télécharger version certifiée (photo badgée / vignette vidéo badgée)
+  $("downloadBadgedBtn").addEventListener("click", async () => {
+    const proofShortId = shortenId(id);
+
+    // baseImageSrc = image OR captured frame from video
+    let baseImageSrc = mediaUrl;
+
+    if (isVideo(data.mimetype, mediaUrl)) {
+      // Capture frame vidéo => dataURL image
+      baseImageSrc = await captureVideoFrameToDataUrl(mediaUrl);
+    }
+
+    const badgedDataUrl = await generateBadgedPng({
+      baseImageSrc,
+      qrSrc: qrSrc || null,
+      proofShortId
+    });
+
+    const blob = await (await fetch(badgedDataUrl)).blob();
+    downloadBlob(blob, `evidencia_certifie_${proofShortId}.png`);
+  });
+
+  // 4) Pack ZIP (inclut copie badgée, y compris vidéo via frame)
+  $("downloadPackBtn").addEventListener("click", async () => {
+    const zip = new JSZip();
+
+    // original
+    const originalBlob = await fetchAsBlob(mediaUrl);
+    const ext = (String(data.mimetype || "").split("/")[1] || "").replace("jpeg","jpg");
+    const originalName = isVideo(data.mimetype, mediaUrl)
+      ? `original_${shortenId(id)}.${ext || "mp4"}`
+      : `original_${shortenId(id)}.${ext || "jpg"}`;
+
+    zip.file(safeFilename(originalName), originalBlob);
+
+    // receipt.json
+    const receipt = {
+      proofId: id,
+      hash: data.hash,
+      timestamp: data.timestamp,
+      txHash: data.txHash,
+      mimetype: data.mimetype,
+      mediaUrl: data.mediaUrl,
+      verifyUrl
+    };
+    zip.file("receipt.json", JSON.stringify(receipt, null, 2));
+
+    // qr.png si dispo
+    if (qrSrc) {
+      try {
+        const qrBlob = await fetchAsBlob(qrSrc);
+        zip.file("qr.png", qrBlob);
+      } catch (e) {}
+    }
+
+    // copie badgée : photo OU vignette vidéo
+    let baseImageSrc = mediaUrl;
+    if (isVideo(data.mimetype, mediaUrl)) {
+      baseImageSrc = await captureVideoFrameToDataUrl(mediaUrl);
+    }
+    const badgedDataUrl = await generateBadgedPng({
+      baseImageSrc,
+      qrSrc: qrSrc || null,
+      proofShortId: shortenId(id)
+    });
+    const badgedBlob = await (await fetch(badgedDataUrl)).blob();
+    zip.file(`certifie_${shortenId(id)}.png`, badgedBlob);
+
+    const out = await zip.generateAsync({ type: "blob" });
+    downloadBlob(out, `evidencia_pack_${shortenId(id)}.zip`);
+  });
+}
