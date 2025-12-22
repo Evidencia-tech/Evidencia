@@ -1,6 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
   const photoInput = document.getElementById('photoInput');
-  const captureButton = document.getElementById('captureButton');
+  const videoInput = document.getElementById('videoInput');
+
+  const capturePhotoBtn = document.getElementById('capturePhotoBtn');
+  const captureVideoBtn = document.getElementById('captureVideoBtn');
+
   const statusBox = document.getElementById('statusBox');
   const resultEl = document.getElementById('result');
   const proofIdEl = document.getElementById('proofId');
@@ -8,12 +12,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const timestampEl = document.getElementById('timestamp');
   const openProofBtn = document.getElementById('openProof');
   const shareProofBtn = document.getElementById('shareProof');
+
   const previewWrapper = document.getElementById('previewWrapper');
+  const videoPreviewWrapper = document.getElementById('videoPreviewWrapper');
   const previewImage = document.getElementById('previewImage');
+  const previewVideo = document.getElementById('previewVideo');
+
   const apiKeyInput = document.getElementById('apiKey');
 
   // Sécurité minimale : si un élément clé manque, on affiche une erreur visible
-  if (!photoInput || !captureButton || !statusBox) {
+  if (!photoInput || !videoInput || !capturePhotoBtn || !captureVideoBtn || !statusBox) {
     const badge = document.createElement("div");
     badge.textContent = "ERREUR: élément HTML manquant (id)";
     badge.style.cssText =
@@ -22,7 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  captureButton.disabled = false;
+  capturePhotoBtn.disabled = false;
+  captureVideoBtn.disabled = false;
 
   function setStatus(message, type) {
     statusBox.textContent = message;
@@ -30,16 +39,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (type) statusBox.classList.add(type);
   }
 
-  function resetInput() {
+  function resetInputs() {
     photoInput.value = '';
+    videoInput.value = '';
   }
 
-  async function uploadFile(file) {
-    setStatus('Photo détectée ⏳ envoi...', 'success');
-    captureButton.disabled = true;
+  function setButtonsDisabled(disabled) {
+    capturePhotoBtn.disabled = disabled;
+    captureVideoBtn.disabled = disabled;
+  }
+
+  async function uploadFile(file, kind) {
+    setStatus(`${kind === 'video' ? 'Vidéo' : 'Photo'} détectée ⏳ envoi...`, 'success');
+    setButtonsDisabled(true);
 
     const formData = new FormData();
-    formData.append('file', file, file.name || 'capture.jpg');
+    formData.append('file', file, file.name || (kind === 'video' ? 'capture.webm' : 'capture.jpg'));
+    formData.append('type', kind); // utile si ton backend veut différencier
 
     const headers = {};
     const key = apiKeyInput && apiKeyInput.value ? apiKeyInput.value.trim() : "";
@@ -71,11 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const verifyUrl = data.verifyUrl || `/public/verify.html?id=${data.id}`;
       if (openProofBtn) openProofBtn.onclick = () => window.location.href = verifyUrl;
 
-      if (data.imageUrl && previewImage && previewWrapper) {
-        previewImage.src = data.imageUrl;
-        previewWrapper.style.display = 'block';
-      }
-
       if (shareProofBtn && navigator.share) {
         shareProofBtn.style.display = 'inline-block';
         shareProofBtn.onclick = async () => {
@@ -83,40 +94,55 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       }
 
-      setStatus('Photo certifiée avec succès ✅ Redirection...', 'success');
+      setStatus(`${kind === 'video' ? 'Vidéo' : 'Photo'} certifiée ✅ Redirection...`, 'success');
       setTimeout(() => window.location.href = verifyUrl, 1200);
     } catch (err) {
-      setStatus(err.message || ' ❌ Erreur lors de la certification', 'error');
-      captureButton.disabled = false;
+      setStatus(err.message || '❌ Erreur lors de la certification', 'error');
+      setButtonsDisabled(false);
     } finally {
-      resetInput();
+      resetInputs();
     }
   }
 
-  function handleFileSelection() {
-    const file = photoInput.files && photoInput.files[0];
+  function handleFileSelection(e) {
+    const input = e.target; // photoInput ou videoInput
+    const file = input.files && input.files[0];
+
     if (!file) {
-      setStatus('Aucune photo détectée, veuillez réessayer.', 'error');
+      setStatus('Aucun fichier détecté, veuillez réessayer.', 'error');
       return;
     }
 
+    const isVideo = file.type && file.type.startsWith('video/');
+
     // Preview local immédiat
-    if (previewImage && previewWrapper) {
-      const localUrl = URL.createObjectURL(file);
-      previewImage.src = localUrl;
-      previewWrapper.style.display = 'block';
+    if (isVideo) {
+      if (previewWrapper) previewWrapper.style.display = 'none';
+      if (videoPreviewWrapper) videoPreviewWrapper.style.display = 'block';
+      if (previewVideo) previewVideo.src = URL.createObjectURL(file);
+    } else {
+      if (videoPreviewWrapper) videoPreviewWrapper.style.display = 'none';
+      if (previewWrapper) previewWrapper.style.display = 'block';
+      if (previewImage) previewImage.src = URL.createObjectURL(file);
     }
 
-    uploadFile(file);
+    uploadFile(file, isVideo ? 'video' : 'photo');
   }
 
   // Quand un fichier est sélectionné
   photoInput.addEventListener('change', handleFileSelection);
+  videoInput.addEventListener('change', handleFileSelection);
 
-  // ✅ Bouton capture: ouvre le sélecteur/caméra (direct, sans setTimeout)
-  captureButton.addEventListener('click', () => {
-    resetInput();
-    setStatus('Ouverture de la caméra...', undefined);
+  // Boutons : ouvre caméra / sélecteur
+  capturePhotoBtn.addEventListener('click', () => {
+    resetInputs();
+    setStatus('Ouverture de la caméra photo...', undefined);
     photoInput.click();
+  });
+
+  captureVideoBtn.addEventListener('click', () => {
+    resetInputs();
+    setStatus('Ouverture de la caméra vidéo...', undefined);
+    videoInput.click();
   });
 });
