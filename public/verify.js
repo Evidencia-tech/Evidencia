@@ -1,3 +1,10 @@
+document.getElementById('btnShare')?.addEventListener('click', () => {
+  const url = new URL(window.location.href);
+  const id = url.searchParams.get('id');
+  if (!id) return alert("ID de preuve manquant.");
+  window.location.href = `/public/share.html?id=${encodeURIComponent(id)}`;
+});
+
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
