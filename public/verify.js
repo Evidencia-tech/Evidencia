@@ -8,64 +8,80 @@ document.addEventListener("DOMContentLoaded", async () => {
   const timeEl = document.getElementById("time");
   const txEl = document.getElementById("tx");
   const qrImg = document.getElementById("qr");
+
   const proofImage = document.getElementById("proofImage");
   const imageWrapper = document.getElementById("imageWrapper");
+
   const proofVideo = document.getElementById("proofVideo");
-const videoWrapper = document.getElementById("videoWrapper");
+  const videoWrapper = document.getElementById("videoWrapper");
+
   const viewTxBtn = document.getElementById("viewTx");
 
-
   if (pid) pid.textContent = id || "Missing id";
+  if (!id) return;
 
-  async function load() {
-    if (!id) return;
-
+  try {
     const res = await fetch(`${apiBase}/api/verify/${encodeURIComponent(id)}`);
     if (!res.ok) {
-      badge.textContent = "VERIFY: API erreur";
+      console.error("VERIFY API error:", res.status);
       return;
     }
 
     const data = await res.json();
-    console.log("VERIFY DATA:", data);
-badge.textContent = "KEYS: " + Object.keys(data).join(", ");
 
-    if (hashEl) hashEl.textContent = data.hash || "";
-    if (timeEl && data.timestamp) timeEl.textContent = new Date(data.timestamp * 1000).toISOString();
-    if (txEl) txEl.textContent = data.txHash || "N/A";
+    // meta
+    if (hashEl) hashEl.textContent = data.hash || "-";
 
-    if (qrImg && (data.qrUrl || data.qr)) qrImg.src = data.qrUrl || data.qr;
+    if (timeEl) {
+      if (data.timestamp) {
+        // timestamp renvoyé chez toi = secondes (number). Si un jour c’est ISO, ça marche aussi.
+        const d = typeof data.timestamp === "number"
+          ? new Date(data.timestamp * 1000)
+          : new Date(data.timestamp);
+        timeEl.textContent = isNaN(d.getTime()) ? "-" : d.toISOString();
+      } else {
+        timeEl.textContent = "-";
+      }
+    }
 
-// Media: image ou vidéo (basé sur ce que renvoie TON API)
-const mime = data.mimetype || "";
-const isVideo = mime.startsWith("video/");
+    if (txEl) txEl.textContent = data.txHash || "-";
 
-// URL du fichier (clé chez toi)
-const mediaUrl = data.uri || data.imageUrl;
+    if (qrImg) {
+      const q = data.qrUrl || data.qr;
+      qrImg.src = q || "";
+    }
 
-// reset affichage
-if (imageWrapper) imageWrapper.style.display = "none";
-if (videoWrapper) videoWrapper.style.display = "none";
+    // media (TES champs: mimetype + uri)
+    const mime = data.mimetype || "";
+    const isVideo = mime.startsWith("video/");
+    const mediaUrl = data.uri || data.imageUrl || "";
 
-if (isVideo) {
-  if (proofVideo && videoWrapper && mediaUrl) {
-    proofVideo.src = mediaUrl;
-    videoWrapper.style.display = "block";
-  }
-} else {
-  if (proofImage && imageWrapper && mediaUrl) {
-    proofImage.src = mediaUrl;
-    imageWrapper.style.display = "block";
-  }
-}
+    if (imageWrapper) imageWrapper.style.display = "none";
+    if (videoWrapper) videoWrapper.style.display = "none";
+
+    if (isVideo) {
+      if (proofVideo && videoWrapper && mediaUrl) {
+        proofVideo.src = mediaUrl;
+        videoWrapper.style.display = "block";
+      }
+    } else {
+      if (proofImage && imageWrapper && mediaUrl) {
+        proofImage.src = mediaUrl;
+        imageWrapper.style.display = "block";
+      }
+    }
+
+    // polygonscan
     if (viewTxBtn) {
       if (data.txHash && data.txHash !== "demo-no-chain") {
         viewTxBtn.disabled = false;
-        viewTxBtn.onclick = () => window.open(`https://mumbai.polygonscan.com/tx/${data.txHash}`, "_blank");
+        viewTxBtn.onclick = () =>
+          window.open(`https://mumbai.polygonscan.com/tx/${data.txHash}`, "_blank");
       } else {
         viewTxBtn.disabled = true;
       }
     }
-}
-  load();
+  } catch (e) {
+    console.error("VERIFY JS crash:", e);
+  }
 });
