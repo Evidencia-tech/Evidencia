@@ -18,6 +18,12 @@
       --accent: #22c55e;
       --error: #f87171;
     }
+    .brand-logo{
+  height: 240px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#0b1220}
     .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 40px}
@@ -44,7 +50,15 @@
 
     button{appearance:none;border:none;cursor:pointer;border-radius:14px;padding:11px 12px;font-weight:800;font-size:13px}
     .primary{background:linear-gradient(180deg,#79b8ff,var(--primary));color:#07111f}
-    .ghost{background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.12)}
+ .ghost{
+  background: rgba(17, 24, 39, 0.08);
+  color: #374151;
+  border: 1px solid rgba(17, 24, 39, 0.18);
+}
+
+.ghost:hover{
+  background: rgba(17, 24, 39, 0.12);
+}
     .small{font-size:12px;padding:9px 10px;border-radius:12px}
 
     .hint{margin-top:10px;font-size:12px;color:#4b5563}
@@ -54,19 +68,16 @@
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div class="brand">
-        <div class="logo">E</div>
-        <div>
-          <div class="h1">ÉVIDENCIA — PARTAGE</div>
-          <div class="sub">Lien, original, version certifiée, pack ZIP</div>
-        </div>
-      </div>
-      <div class="row">
-        <button class="ghost small" id="backBtn">Retour</button>
-      </div>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <img src="/public/Logo.png" alt="Évidencia" class="brand-logo">
     </div>
+
+    <div class="row">
+      <button class="ghost small" id="backBtn">Retour</button>
+    </div>
+  </div>
 
     <div class="panel">
       <div class="preview">
