@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ÉVIDENCIA — Partager la preuve</title>
+
+  <!-- JSZip pour "Télécharger le pack" -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#F3EBDD;
+      --card:#111827;
+      --border:#1f2937;
+      --text:#f9fafb;
+      --muted:#9ca3af;
+      --primary:#60a5fa;
+      --accent:#22c55e;
+      --error:#f87171;
+      --cream:#f6efe3;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:#0b1220;
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:24px 16px 40px;
+    }
+    .top{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo{
+      width:44px;height:44px;
+      border-radius:14px;
+      background:#0b1220;
+      display:grid;place-items:center;
+      color:white;font-weight:800;
+      letter-spacing:0.5px;
+    }
+    .h1{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:0.8px;
+    }
+    .sub{
+      color:#465063;
+      font-size:13px;
+      margin-top:2px;
+    }
+
+    .panel{
+      display:grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    .preview{
+      background:rgba(255,255,255,0.55);
+      border:1px solid rgba(0,0,0,0.08);
+      border-radius:22px;
+      padding:16px;
+      backdrop-filter: blur(6px);
+    }
+    .preview .status{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-bottom:12px;
+    }
+    .pill{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(34,197,94,0.14);
+      color:#0b6b2b;
+      font-weight:700;
+      font-size:12px;
+      border:1px solid rgba(34,197,94,0.22);
+    }
+    .meta{
+      color:#4b5563;
+      font-size:12px;
+    }
+    .media{
+      width:100%;
+      border-radius:16px;
+      overflow:hidden;
+      background:#0b1220;
+      border:1px solid rgba(0,0,0,0.08);
+    }
+    .media img, .media video{
+      width:100%;
+      display:block;
+      max-height:420px;
+      object-fit:contain;
+      background:#0b1220;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+    }
+    .card{
+      background:var(--card);
+      color:var(--text);
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:16px;
+    }
+    .card h3{
+      margin:0 0 6px;
+      font-size:14px;
+      font-weight:800;
+      letter-spacing:0.2px;
+    }
+    .card p{
+      margin:0 0 12px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    button{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      border-radius:14px;
+      padding:11px 12px;
+      font-weight:800;
+      font-size:13px;
+    }
+    .primary{
+      background:linear-gradient(180deg, #79b8ff, var(--primary));
+      color:#07111f;
+    }
+    .ghost{
+      background:rgba(255,255,255,0.08);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,0.12);
+    }
+    .danger{
+      background:rgba(248,113,113,0.18);
+      color:#ffd7d7;
+      border:1px solid rgba(248,113,113,0.22);
+    }
+    .small{
+      font-size:12px;
+      padding:9px 10px;
+      border-radius:12px;
+    }
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      color:#4b5563;
+    }
+    .mono{
+      font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+      font-size:12px;
+      color:#0b1220;
+      background:rgba(255,255,255,0.55);
+      border:1px solid rgba(0,0,0,0.08);
+      padding:8px 10px;
+      border-radius:12px;
+      overflow:auto;
+    }
+
+    @media (max-width: 900px){
+      .panel{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="logo">E</div>
+        <div>
+          <div class="h1">ÉVIDENCIA — PARTAGE</div>
+          <div class="sub">Lien, original, version certifiée, pack ZIP</div>
+        </div>
+      </div>
+      <div class="row">
+        <button class="ghost small" id="backBtn">Retour</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="preview">
+        <div class="status">
+          <span class="pill">✔ Preuve validée</span>
+          <span class="meta" id="metaLine">Chargement…</span>
+        </div>
+
+        <div class="media" id="mediaBox"></div>
+
+        <div class="hint">Le badge est appliqué sur une <b>copie de partage</b>. La preuve originale reste intouchable (intégrité).</div>
+        <div class="mono" id="verifyUrlBox">—</div>
+      </div>
+
+      <div class="actions">
+        <div class="card">
+          <h3>Partager le lien</h3>
+          <p>Copier ou partager le lien de vérification. C’est l’action n°1.</p>
+          <div class="row">
+            <button class="primary" id="copyLinkBtn">Copier le lien</button>
+            <button class="ghost" id="nativeShareBtn">Partager</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Télécharger l’original</h3>
+          <p>Photo ou vidéo non modifiée (preuve d’origine).</p>
+          <div class="row">
+            <button class="primary" id="downloadOriginalBtn">Télécharger</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Télécharger version certifiée</h3>
+          <p>Copie de partage (photo badgée + QR). Pour vidéo : vignette badgée.</p>
+          <div class="row">
+            <button class="primary" id="downloadBadgedBtn">Télécharger</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Télécharger le pack</h3>
+          <p>ZIP : original + receipt.json + QR + copie badgée.</p>
+          <div class="row">
+            <button class="primary" id="downloadPackBtn">Télécharger le ZIP</button>
+            <button class="danger" id="packInfoBtn">Infos</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/public/share.js"></script>
+</body>
+</html>
