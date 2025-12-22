@@ -19,14 +19,38 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const proofsDir = path.join(__dirname, '../public/proofs');
+
+// public/proofs (côté serveur)
+const publicDir = path.join(__dirname, '../public');
+const proofsDir = path.join(publicDir, 'proofs');
 
 if (!fs.existsSync(proofsDir)) {
   fs.mkdirSync(proofsDir, { recursive: true });
 }
 
-const resolveImageUrl = (id) => {
-  const candidates = ['.jpg', '.jpeg', '.png', '.gif'];
+// ---------------------------
+// Helpers: extension & mediaUrl
+// ---------------------------
+const extFromMimetypeOrName = (mimetype, originalname) => {
+  const m = (mimetype || '').toLowerCase();
+
+  // images
+  if (m === 'image/jpeg' || m === 'image/jpg') return '.jpg';
+  if (m === 'image/png') return '.png';
+  if (m === 'image/gif') return '.gif';
+
+  // vidéos
+  if (m === 'video/mp4') return '.mp4';
+  if (m === 'video/webm') return '.webm';
+  if (m === 'video/quicktime') return '.mov';
+  if (m === 'video/x-m4v') return '.m4v';
+
+  const ext = path.extname(originalname || '').trim().toLowerCase();
+  return ext || '.bin';
+};
+
+const resolveMediaUrl = (id) => {
+  const candidates = ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.mov', '.m4v'];
   for (const ext of candidates) {
     const candidatePath = path.join(proofsDir, `${id}${ext}`);
     if (fs.existsSync(candidatePath)) {
@@ -36,28 +60,29 @@ const resolveImageUrl = (id) => {
   return null;
 };
 
+// ---------------------------
+// App
+// ---------------------------
 const app = express();
 app.set('trust proxy', 1);
 
-app.use('/public', express.static(path.join(__dirname, '../public')));
+// Static
+app.use('/public', express.static(publicDir));
 
-app.get('/', (_req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
-});
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }
-});
-
+// Sécurité / réseau
 const limiter = rateLimit({ windowMs: 60 * 1000, max: 100 });
 app.use(limiter);
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
-app.use('/public', express.static(path.join(__dirname, '../public')));
 
+// Upload (100MB pour vidéos iPhone)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 100 * 1024 * 1024 }
+});
 
+// API key (optionnelle)
 const requireApiKey = (req, res, next) => {
   const expected = process.env.API_KEY;
   if (!expected) return next();
@@ -68,35 +93,46 @@ const requireApiKey = (req, res, next) => {
   return next();
 };
 
-app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+// Home
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(publicDir, 'index.html'));
+});
 
+// Health
+app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+app.get('/api/ping', (_req, res) => res.status(200).send('pong'));
+
+// ---------------------------
+// Certification handler
+// ---------------------------
 const handleCertification = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'File is required' });
+
     const buffer = req.file.buffer;
     const hashHex = '0x' + crypto.createHash('sha256').update(buffer).digest('hex');
     const timestamp = Math.floor(Date.now() / 1000);
     const id = nanoid();
 
-    const isImage = req.file.mimetype?.startsWith('image/');
-    let imageUrl = null;
-    if (isImage) {
-      const extension = (() => {
-        if (!req.file.mimetype) return '.bin';
-        if (req.file.mimetype === 'image/jpeg' || req.file.mimetype === 'image/jpg') return '.jpg';
-        if (req.file.mimetype === 'image/png') return '.png';
-        if (req.file.mimetype === 'image/gif') return '.gif';
-        const extFromName = path.extname(req.file.originalname || '').trim();
-        return extFromName || '.bin';
-      })();
+    // ✅ Stockage TOUJOURS (photo OU vidéo)
+    const mimetype = req.file.mimetype || '';
+    const extension = extFromMimetypeOrName(mimetype, req.file.originalname);
 
-      const storedFileName = `${id}${extension}`;
-      const storedPath = path.join(proofsDir, storedFileName);
-      await fsPromises.writeFile(storedPath, buffer);
-      imageUrl = `/public/proofs/${storedFileName}`;
-    }
+    const storedFileName = `${id}${extension}`;
+    const storedPath = path.join(proofsDir, storedFileName);
+    await fsPromises.writeFile(storedPath, buffer);
 
-    const verifyUrl = `${process.env.PUBLIC_BASE_URL || req.protocol + '://' + req.get('host')}/public/verify.html?id=${id}`;
+    // ✅ URL publique unique consommée par verify.js
+    const mediaUrl = `/public/proofs/${storedFileName}`;
+
+    // URL publique de la preuve
+    const base =
+      process.env.PUBLIC_BASE_URL ||
+      `${req.protocol}://${req.get('host')}`;
+
+    const verifyUrl = `${base}/public/verify.html?id=${encodeURIComponent(id)}`;
+
+    // QR + chain
     const qr = await generateQr(verifyUrl);
     const chainResult = await sendToPolygon({ hashHex, timestamp, uri: verifyUrl });
 
@@ -105,38 +141,56 @@ const handleCertification = async (req, res) => {
       hash: hashHex,
       timestamp,
       filename: req.file.originalname,
-      mimetype: req.file.mimetype,
+      mimetype,
       txHash: chainResult.txHash,
       uri: verifyUrl,
       qr,
-      imageUrl
+      mediaUrl
     };
 
     await insertProof(record);
-    res.json({ ...record, note: chainResult.note, verifyUrl, imageUrl, qrUrl: qr });
+
+    res.json({
+      ...record,
+      note: chainResult.note,
+      verifyUrl,
+      qrUrl: qr
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Certification failed', error: error.message });
   }
 };
 
+// Routes certify
 app.post('/api/certify', requireApiKey, upload.single('file'), handleCertification);
 app.post('/api/partner/certify', requireApiKey, upload.single('file'), handleCertification);
 
+// ---------------------------
+// Verify (public)
+// ---------------------------
 app.get('/api/verify/:id', async (req, res) => {
   try {
     const proof = await getProof(req.params.id);
     if (!proof) return res.status(404).json({ message: 'Proof not found' });
+
     const verifyUrl =
-      proof.uri || `${req.protocol}://${req.get('host')}/public/verify.html?id=${proof.id}`;
+      proof.uri || `${req.protocol}://${req.get('host')}/public/verify.html?id=${encodeURIComponent(proof.id)}`;
+
     const qrUrl = proof.qr || (await generateQr(verifyUrl));
-    const imageUrl = proof.imageUrl || resolveImageUrl(proof.id);
-    res.json({ ...proof, verifyUrl, qrUrl, imageUrl });
+
+    // ✅ mediaUrl prioritaire, sinon on tente de résoudre sur disque
+    const mediaUrl = proof.mediaUrl || resolveMediaUrl(proof.id);
+
+    res.json({ ...proof, verifyUrl, qrUrl, mediaUrl });
   } catch (error) {
     res.status(500).json({ message: 'Lookup failed', error: error.message });
   }
 });
 
+// ---------------------------
+// History (protégé)
+// ---------------------------
 app.get('/api/history', requireApiKey, async (_req, res) => {
   try {
     const proofs = await listProofs();
@@ -145,12 +199,8 @@ app.get('/api/history', requireApiKey, async (_req, res) => {
     res.status(500).json({ message: 'Unable to fetch history', error: error.message });
   }
 });
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
-});
-app.get('/api/ping', (_req, res) => {
-  res.status(200).send('pong');
-});
+
+// Listen
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Evidencia backend listening on port ${PORT}`);
