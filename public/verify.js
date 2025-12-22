@@ -64,6 +64,6 @@ if ((mediaType === "video" || (videoUrl && !imageUrl)) && proofVideo && videoWra
         viewTxBtn.disabled = true;
       }
     }
-
+}
   load();
 });
