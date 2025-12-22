@@ -1,9 +1,3 @@
-document.getElementById('btnShare')?.addEventListener('click', () => {
-  const url = new URL(window.location.href);
-  const id = url.searchParams.get('id');
-  if (!id) return alert("ID de preuve manquant.");
-  window.location.href = `/public/share.html?id=${encodeURIComponent(id)}`;
-});
 
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
@@ -24,7 +18,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const viewTxBtn = document.getElementById("viewTx");
   const newCaptureBtn = document.getElementById("newCapture");
-
+const shareBtn = document.getElementById("shareBtn");
+if (shareBtn) {
+  shareBtn.onclick = () => {
+    window.location.href = `/public/share.html?id=${encodeURIComponent(id)}`;
+  };
+}
   const hide = (el) => el && (el.style.display = "none");
   const show = (el) => el && (el.style.display = "block");
 
