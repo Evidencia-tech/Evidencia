@@ -3,9 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ÉVIDENCIA — Partager la preuve</title>
+  <title>ÉVIDENCIA — Partage</title>
 
-  <!-- JSZip pour "Télécharger le pack" -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <style>
@@ -17,8 +16,6 @@
       --muted:#9ca3af;
       --primary:#60a5fa;
       --accent:#22c55e;
-      --error:#f87171;
-      --cream:#f6efe3;
     }
 
     *{box-sizing:border-box}
@@ -36,19 +33,32 @@
       padding:24px 16px 40px;
     }
 
-    /* Header simple : gauche vide, bouton Retour à droite */
+    /* ===== HEADER (COMME AVANT) ===== */
     .top{
       display:flex;
       align-items:center;
       justify-content:space-between;
       margin-bottom:14px;
-      min-height:44px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:1;
+    }
+
+    .brand-logo{
+      height:44px;
+      width:auto;
+      opacity:0.28;              /* semi-transparent comme avant */
+      filter: saturate(0.9);
+      object-fit:contain;
     }
 
     .row{
       display:flex;
       gap:10px;
-      flex-wrap:wrap;
     }
 
     button{
@@ -62,11 +72,11 @@
     }
 
     .primary{
-      background:linear-gradient(180deg, #79b8ff, var(--primary));
+      background:linear-gradient(180deg,#79b8ff,var(--primary));
       color:#07111f;
     }
 
-    /* Retour plus lisible (gris) */
+    /* Bouton Retour plus gris, moins transparent */
     .ghost{
       background: rgba(17, 24, 39, 0.08);
       color: #374151;
@@ -76,18 +86,7 @@
       background: rgba(17, 24, 39, 0.12);
     }
 
-    .danger{
-      background:rgba(248,113,113,0.18);
-      color:#ffd7d7;
-      border:1px solid rgba(248,113,113,0.22);
-    }
-
-    .small{
-      font-size:12px;
-      padding:9px 10px;
-      border-radius:12px;
-    }
-
+    /* ===== LAYOUT ===== */
     .panel{
       display:grid;
       grid-template-columns: 1.2fr 1fr;
@@ -95,36 +94,20 @@
       align-items:start;
     }
 
-   .preview{
-  background: rgba(255, 255, 255, 0.35);      /* plus transparent */
-  border: 1px solid rgba(17, 24, 39, 0.10);    /* bord plus doux */
-  border-radius: 22px;
-  padding: 16px;
-
-  backdrop-filter: blur(12px);                /* glass effect */
-  -webkit-backdrop-filter: blur(12px);        /* Safari */
-
-  box-shadow:
-    0 10px 30px rgba(17, 24, 39, 0.08),        /* profondeur */
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);   /* highlight interne */
-}
-
-    /* Logo centré dans la colonne gauche, comme sur tes autres pages */
-    .brand-block{
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      padding: 6px 0 14px;
+    /* ===== CADRE GAUCHE (GLASS COMME AVANT) ===== */
+    .preview{
+      background: rgba(255,255,255,0.35);
+      border: 1px solid rgba(17,24,39,0.10);
+      border-radius:22px;
+      padding:16px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow:
+        0 10px 30px rgba(17,24,39,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.35);
     }
 
-    .brand-logo{
-      height: 240px;    /* ajuste 80–120 selon rendu */
-      width: auto;
-      display:block;
-      object-fit:contain;
-    }
-
-    .preview .status{
+    .status{
       display:flex;
       gap:10px;
       align-items:center;
@@ -133,8 +116,8 @@
 
     .pill{
       display:inline-flex;
-      gap:8px;
       align-items:center;
+      gap:6px;
       padding:8px 12px;
       border-radius:999px;
       background:rgba(34,197,94,0.14);
@@ -145,8 +128,8 @@
     }
 
     .meta{
-      color:#4b5563;
       font-size:12px;
+      color:#4b5563;
     }
 
     .media{
@@ -157,7 +140,8 @@
       border:1px solid rgba(0,0,0,0.08);
     }
 
-    .media img, .media video{
+    .media img,
+    .media video{
       width:100%;
       display:block;
       max-height:420px;
@@ -165,9 +149,27 @@
       background:#0b1220;
     }
 
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      color:#4b5563;
+    }
+
+    .mono{
+      margin-top:8px;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+      font-size:12px;
+      color:#0b1220;
+      background:rgba(255,255,255,0.55);
+      border:1px solid rgba(0,0,0,0.08);
+      padding:8px 10px;
+      border-radius:12px;
+      overflow:auto;
+    }
+
+    /* ===== COLONNE DROITE ===== */
     .actions{
       display:grid;
-      grid-template-columns:1fr;
       gap:12px;
     }
 
@@ -183,7 +185,6 @@
       margin:0 0 6px;
       font-size:14px;
       font-weight:800;
-      letter-spacing:0.2px;
     }
 
     .card p{
@@ -193,24 +194,7 @@
       line-height:1.4;
     }
 
-    .hint{
-      margin-top:10px;
-      font-size:12px;
-      color:#4b5563;
-    }
-
-    .mono{
-      font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-      font-size:12px;
-      color:#0b1220;
-      background:rgba(255,255,255,0.55);
-      border:1px solid rgba(0,0,0,0.08);
-      padding:8px 10px;
-      border-radius:12px;
-      overflow:auto;
-    }
-
-    @media (max-width: 900px){
+    @media (max-width:900px){
       .panel{grid-template-columns:1fr}
     }
   </style>
@@ -219,22 +203,19 @@
 <body>
   <div class="wrap">
 
-    <!-- Header minimal : bouton Retour à droite -->
+    <!-- HEADER -->
     <div class="top">
-      <div></div>
+      <div class="brand">
+        <img src="/public/Logo.png" alt="Évidencia" class="brand-logo">
+      </div>
       <div class="row">
-        <button class="ghost small" id="backBtn">Retour</button>
+        <button class="ghost" id="backBtn">Retour</button>
       </div>
     </div>
 
     <div class="panel">
+      <!-- GAUCHE -->
       <div class="preview">
-
-        <!-- Logo dans la colonne gauche (comme tes autres pages) -->
-        <div class="brand-block">
-          <img src="/public/Logo.png" alt="Évidencia" class="brand-logo">
-        </div>
-
         <div class="status">
           <span class="pill">✔ Preuve validée</span>
           <span class="meta" id="metaLine">Chargement…</span>
@@ -242,10 +223,15 @@
 
         <div class="media" id="mediaBox"></div>
 
-        <div class="hint">Le badge est appliqué sur une <b>copie de partage</b>. La preuve originale reste intouchable (intégrité).</div>
+        <div class="hint">
+          Le badge est appliqué sur une <b>copie de partage</b>.
+          La preuve originale reste intouchable (intégrité).
+        </div>
+
         <div class="mono" id="verifyUrlBox">—</div>
       </div>
 
+      <!-- DROITE -->
       <div class="actions">
         <div class="card">
           <h3>Partager le lien</h3>
@@ -258,27 +244,20 @@
 
         <div class="card">
           <h3>Télécharger l’original</h3>
-          <p>Photo ou vidéo non modifiée (preuve d’origine).</p>
-          <div class="row">
-            <button class="primary" id="downloadOriginalBtn">Télécharger</button>
-          </div>
+          <p>Photo ou vidéo non modifiée.</p>
+          <button class="primary" id="downloadOriginalBtn">Télécharger</button>
         </div>
 
         <div class="card">
           <h3>Télécharger version certifiée</h3>
-          <p>Copie de partage (photo badgée + QR). Pour vidéo : vignette badgée.</p>
-          <div class="row">
-            <button class="primary" id="downloadBadgedBtn">Télécharger</button>
-          </div>
+          <p>Photo badgée + QR. Vidéo : vignette badgée.</p>
+          <button class="primary" id="downloadBadgedBtn">Télécharger</button>
         </div>
 
         <div class="card">
           <h3>Télécharger le pack</h3>
           <p>ZIP : original + receipt.json + QR + copie badgée.</p>
-          <div class="row">
-            <button class="primary" id="downloadPackBtn">Télécharger le ZIP</button>
-            <button class="danger" id="packInfoBtn">Infos</button>
-          </div>
+          <button class="primary" id="downloadPackBtn">Télécharger le ZIP</button>
         </div>
       </div>
     </div>
