@@ -38,13 +38,12 @@
       margin:0 auto;
       padding:24px 16px 40px;
     }
-    .top{
-      display:flex;
-      gap:16px;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:14px;
-    }
+.top{
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 14px;
+}
     .brand{
       display:flex;
       gap:12px;
@@ -149,6 +148,24 @@
       gap:10px;
       flex-wrap:wrap;
     }
+    .top{
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+/* centrage du logo UNIQUEMENT dans le header */
+.top .brand{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* bouton retour à droite */
+.top .row{
+  margin-left: auto;
+}
     button{
       appearance:none;
       border:none;
