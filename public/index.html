@@ -147,7 +147,26 @@
       color:var(--muted);
       line-height:1.45;
       font-size:14px;
-    }
+    }.cta-capture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  gap: 4px;
+}
+
+.cta-capture strong {
+  font-weight: 600;
+}
+
+.cta-capture .cta-sub {
+  font-size: 12px;
+  font-style: italic;
+  font-weight: 400;
+  opacity: 0.85;
+}
+    
     .side{
       background: var(--card);
       color:#f9fafb;
@@ -283,13 +302,14 @@
           Capture une photo ou une vidéo. Elle est immédiatement <strong>hashée</strong>, <strong>horodatée</strong> et
           <strong>vérifiable publiquement</strong>. Toute modification invalide la preuve.
         </p>
+<div class="ctaRow">
+  <a class="btn btnPrimary cta-capture" href="/public/capture.html">
+    <strong>Capturer</strong>
+    <span class="cta-sub">Photo ou vidéo</span>
+  </a>
 
-        <div class="ctaRow">
-          <a class="btn btnPrimary" href="/public/capture.html">Capturer</a>
-          <div class="muted" style="margin-top:8px;">Photo ou vidéo</div>
-          <a class="btn btnGhost" href="/public/verify.html">Vérifier une preuve</a>
-        </div>
-
+  <a class="btn btnGhost" href="/public/verify.html">Vérifier une preuve</a>
+</div>
         <div class="grid3">
           <div class="step">
             <p class="t">📸 Capture</p>
