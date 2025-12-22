@@ -20,7 +20,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// public/proofs (côté serveur)
+// Dossier public (pages + proofs)
 const publicDir = path.join(__dirname, '../public');
 const proofsDir = path.join(publicDir, 'proofs');
 
@@ -29,7 +29,7 @@ if (!fs.existsSync(proofsDir)) {
 }
 
 // ---------------------------
-// Helpers: extension & mediaUrl
+// Helpers
 // ---------------------------
 const extFromMimetypeOrName = (mimetype, originalname) => {
   const m = (mimetype || '').toLowerCase();
@@ -38,6 +38,7 @@ const extFromMimetypeOrName = (mimetype, originalname) => {
   if (m === 'image/jpeg' || m === 'image/jpg') return '.jpg';
   if (m === 'image/png') return '.png';
   if (m === 'image/gif') return '.gif';
+  if (m === 'image/webp') return '.webp';
 
   // vidéos
   if (m === 'video/mp4') return '.mp4';
@@ -50,7 +51,7 @@ const extFromMimetypeOrName = (mimetype, originalname) => {
 };
 
 const resolveMediaUrl = (id) => {
-  const candidates = ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webm', '.mov', '.m4v'];
+  const candidates = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm', '.mov', '.m4v', '.bin'];
   for (const ext of candidates) {
     const candidatePath = path.join(proofsDir, `${id}${ext}`);
     if (fs.existsSync(candidatePath)) {
@@ -76,7 +77,7 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-// Upload (100MB pour vidéos iPhone)
+// Upload (100MB)
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 100 * 1024 * 1024 }
@@ -114,18 +115,18 @@ const handleCertification = async (req, res) => {
     const timestamp = Math.floor(Date.now() / 1000);
     const id = nanoid();
 
-    // ✅ Stockage TOUJOURS (photo OU vidéo)
     const mimetype = req.file.mimetype || '';
     const extension = extFromMimetypeOrName(mimetype, req.file.originalname);
 
+    // ✅ Stockage TOUJOURS (photo OU vidéo)
     const storedFileName = `${id}${extension}`;
     const storedPath = path.join(proofsDir, storedFileName);
     await fsPromises.writeFile(storedPath, buffer);
 
-    // ✅ URL publique unique consommée par verify.js
+    // ✅ URL publique DU FICHIER (ce que verify doit charger)
     const mediaUrl = `/public/proofs/${storedFileName}`;
 
-    // URL publique de la preuve
+    // URL publique de la page proof (verify.html)
     const base =
       process.env.PUBLIC_BASE_URL ||
       `${req.protocol}://${req.get('host')}`;
@@ -136,6 +137,7 @@ const handleCertification = async (req, res) => {
     const qr = await generateQr(verifyUrl);
     const chainResult = await sendToPolygon({ hashHex, timestamp, uri: verifyUrl });
 
+    // ✅ On enregistre mediaUrl (et on remplit aussi imageUrl pour compat si besoin)
     const record = {
       id,
       hash: hashHex,
@@ -145,7 +147,9 @@ const handleCertification = async (req, res) => {
       txHash: chainResult.txHash,
       uri: verifyUrl,
       qr,
-      mediaUrl
+      mediaUrl,
+      // compat ancienne colonne (facultatif, mais pratique)
+      imageUrl: mediaUrl
     };
 
     await insertProof(record);
@@ -179,8 +183,8 @@ app.get('/api/verify/:id', async (req, res) => {
 
     const qrUrl = proof.qr || (await generateQr(verifyUrl));
 
-    // ✅ mediaUrl prioritaire, sinon on tente de résoudre sur disque
-    const mediaUrl = proof.mediaUrl || resolveMediaUrl(proof.id);
+    // ✅ mediaUrl prioritaire
+    const mediaUrl = proof.mediaUrl || proof.imageUrl || resolveMediaUrl(proof.id);
 
     res.json({ ...proof, verifyUrl, qrUrl, mediaUrl });
   } catch (error) {
