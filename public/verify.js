@@ -42,21 +42,27 @@ badge.textContent = "KEYS: " + Object.keys(data).join(", ");
 
     if (qrImg && (data.qrUrl || data.qr)) qrImg.src = data.qrUrl || data.qr;
 
-  // Media: image ou vidéo (V1)
-const mediaType = data.type; // "photo" | "video" (si dispo)
-const imageUrl = data.imageUrl;
-const videoUrl = data.videoUrl || data.mediaUrl || data.fileUrl; // selon ce que renvoie ton API
+// Media: image ou vidéo (basé sur ce que renvoie TON API)
+const mime = data.mimetype || "";
+const isVideo = mime.startsWith("video/");
+
+// URL du fichier (clé chez toi)
+const mediaUrl = data.uri || data.imageUrl;
 
 // reset affichage
 if (imageWrapper) imageWrapper.style.display = "none";
 if (videoWrapper) videoWrapper.style.display = "none";
 
-if ((mediaType === "video" || (videoUrl && !imageUrl)) && proofVideo && videoWrapper) {
-  proofVideo.src = videoUrl;
-  videoWrapper.style.display = "block";
-} else if (imageUrl && proofImage && imageWrapper) {
-  proofImage.src = imageUrl;
-  imageWrapper.style.display = "block";
+if (isVideo) {
+  if (proofVideo && videoWrapper && mediaUrl) {
+    proofVideo.src = mediaUrl;
+    videoWrapper.style.display = "block";
+  }
+} else {
+  if (proofImage && imageWrapper && mediaUrl) {
+    proofImage.src = mediaUrl;
+    imageWrapper.style.display = "block";
+  }
 }
     if (viewTxBtn) {
       if (data.txHash && data.txHash !== "demo-no-chain") {
