@@ -211,22 +211,7 @@ if (logoImg) {
   textLeft = lx + logoSize + Math.round(boxW * 0.04);
 }
 
-// 5) Texte (sans "ÉVIDENCIA")
-const t1 = Math.round(boxH * 0.26); // CERTIFIÉ
-const t3 = Math.round(boxH * 0.20); // ID
-
-const line1 = y + Math.round(boxH * 0.42);
-const line3 = y + Math.round(boxH * 0.78);
-
-ctx.fillStyle = "#ffffff";
-ctx.font = `700 ${t1}px Inter, Arial, sans-serif`;
-ctx.fillText("CERTIFIÉ", textLeft, line1);
-
-ctx.fillStyle = "#cbd5e1";
-ctx.font = `${t3}px ui-monospace, Menlo, monospace`;
-ctx.fillText(`ID: ${proofShortId}`, textLeft, line3);
-
-  // ===== QR CODE À DROITE DU BADGE =====
+// 5) QR d'abord (pour réserver l'espace)
 let qrImg = null;
 try {
   qrImg = await loadImage(qrSrc);
@@ -234,19 +219,61 @@ try {
   qrImg = null;
 }
 
-if (qrImg) {
-  const innerPad = Math.round(boxW * 0.06);
-  const qrSize = Math.round(boxH * 0.78); // GROS QR
-  const qx = x + boxW - innerPad - qrSize;
-  const qy = y + Math.round((boxH - qrSize) / 2);
+const innerPadText = Math.round(boxW * 0.06);
+const qrSize = Math.round(boxH * 0.78); // on garde ton QR GROS
+const gap = Math.round(boxW * 0.04);    // espace entre texte et QR
 
+const qx = x + boxW - innerPadText - qrSize;
+const qy = y + Math.round((boxH - qrSize) / 2);
+
+// 6) TEXTE (sans chevauchement)
+const line1 = y + Math.round(boxH * 0.42);
+const line3 = y + Math.round(boxH * 0.78);
+
+// largeur dispo pour le texte (jusqu'au QR)
+const textMaxRight = qx - gap;
+const maxTextWidth = Math.max(10, textMaxRight - textLeft);
+
+// réduit la police jusqu'à ce que ça rentre
+function fitFont(text, basePx, weight, family) {
+  let px = basePx;
+  ctx.font = `${weight} ${px}px ${family}`;
+  while (ctx.measureText(text).width > maxTextWidth && px > 10) {
+    px -= 1;
+    ctx.font = `${weight} ${px}px ${family}`;
+  }
+  return px;
+}
+
+// on clippe la zone texte pour garantir 0 chevauchement
+ctx.save();
+ctx.beginPath();
+ctx.rect(textLeft, y, maxTextWidth, boxH);
+ctx.clip();
+
+// CERTIFIÉ
+ctx.fillStyle = "#ffffff";
+const t1Base = Math.round(boxH * 0.26);
+const t1 = fitFont("CERTIFIÉ", t1Base, 700, "Inter, Arial, sans-serif");
+ctx.font = `700 ${t1}px Inter, Arial, sans-serif`;
+ctx.fillText("CERTIFIÉ", textLeft, line1);
+
+// ID
+ctx.fillStyle = "#cbd5e1";
+const idText = `ID: ${proofShortId}`;
+const t3Base = Math.round(boxH * 0.20);
+const t3 = fitFont(idText, t3Base, 400, "ui-monospace, Menlo, monospace");
+ctx.font = `${t3}px ui-monospace, Menlo, monospace`;
+ctx.fillText(idText, textLeft, line3);
+
+ctx.restore();
+
+// 7) Dessiner le QR en dernier
+if (qrImg) {
   ctx.save();
   ctx.globalAlpha = 1;
   ctx.drawImage(qrImg, qx, qy, qrSize, qrSize);
   ctx.restore();
-}
-
-  return canvas.toDataURL("image/png");
 }
 
 /* ---------- UI ---------- */
