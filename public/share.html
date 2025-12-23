@@ -213,6 +213,109 @@
       border-radius:12px;
       overflow:auto;
     }
+/* ===== Modal ===== */
+.modal{
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9999;
+}
+
+.modal.is-open{ display:block; }
+
+.modal__overlay{
+  position: absolute;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.modal__panel{
+  position: relative;
+  width: min(720px, calc(100vw - 28px));
+  margin: 8vh auto;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.75);
+  border: 1px solid rgba(17,24,39,0.12);
+  box-shadow: 0 18px 60px rgba(17,24,39,0.18);
+  overflow: hidden;
+}
+
+.modal__head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(17,24,39,0.10);
+}
+
+.modal__title{
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+  color: #0b1220;
+}
+
+.modal__close{
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(17, 24, 39, 0.08);
+  color: #374151;
+  border: 1px solid rgba(17, 24, 39, 0.18);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.modal__close:hover{
+  background: rgba(17, 24, 39, 0.12);
+}
+
+.modal__body{
+  padding: 14px 16px 8px;
+  color: #0b1220;
+  max-height: 62vh;
+  overflow: auto;
+}
+
+.modal__body h4{
+  margin: 12px 0 6px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #0b1220;
+}
+
+.modal__body p{
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #111827;
+}
+
+.modal__body ul{
+  margin: 0 0 10px 18px;
+  padding: 0;
+  color: #111827;
+  font-size: 13px;
+}
+
+.modal__signature{
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(17,24,39,0.06);
+  border: 1px solid rgba(17,24,39,0.10);
+  color: #0b1220;
+}
+
+.modal__foot{
+  padding: 12px 16px 16px;
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  border-top: 1px solid rgba(17,24,39,0.10);
+}
 
     @media (max-width: 900px){
       .panel{grid-template-columns:1fr}
@@ -289,5 +392,53 @@
   </div>
 
   <script src="/public/share.js"></script>
+  <!-- Modal Infos Pack -->
+<div id="packInfoModal" class="modal" aria-hidden="true">
+  <div class="modal__overlay" data-close="1"></div>
+
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="packInfoTitle">
+    <div class="modal__head">
+      <div class="modal__title" id="packInfoTitle">Informations sur le pack de preuve</div>
+      <button class="modal__close" id="packInfoCloseBtn" type="button" aria-label="Fermer">✕</button>
+    </div>
+
+    <div class="modal__body">
+      <h4>À quoi sert ce pack de preuve ?</h4>
+      <p>Ce pack permet de <b>transmettre une preuve numérique vérifiable</b> à un tiers, sans dépendre de la personne qui l’a produite.</p>
+      <p>Il est conçu pour être compris et contrôlé par un <b>assureur, un expert, un professionnel ou toute autorité indépendante</b>.</p>
+
+      <h4>Dans quels cas l’utiliser ?</h4>
+      <ul>
+        <li>Déclaration ou instruction de sinistre</li>
+        <li>Expertise ou contre-expertise</li>
+        <li>Constat, désaccord, litige</li>
+        <li>Archivage de preuve dans le temps</li>
+      </ul>
+
+      <h4>Comment la preuve est-elle vérifiée ?</h4>
+      <p>Le QR code ou le lien de vérification permet à tout tiers d’accéder à la page de contrôle associée à cette preuve.</p>
+      <p>Cette page affiche les éléments techniques permettant de vérifier :</p>
+      <ul>
+        <li>l’intégrité du fichier</li>
+        <li>son existence à une date donnée</li>
+        <li>l’absence de modification ultérieure</li>
+      </ul>
+      <p>Aucun logiciel spécifique n’est requis.</p>
+
+      <h4>Quelle est la valeur du pack ?</h4>
+      <p>Pris ensemble, les éléments du pack permettent d’<b>objectiver un fait numérique</b>.</p>
+      <p>ÉVIDENCIA ne repose pas sur une déclaration, mais sur un <b>mécanisme de vérification indépendant</b>.</p>
+
+      <div class="modal__signature">
+        <b>ÉVIDENCIA n’affirme pas.<br/>ÉVIDENCIA permet de vérifier.</b>
+      </div>
+    </div>
+
+    <div class="modal__foot">
+      <button class="ghost" id="packInfoOkBtn" type="button">Fermer</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
