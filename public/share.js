@@ -276,6 +276,8 @@ if (qrImg) {
   ctx.restore();
 }
 
+return canvas.toDataURL("image/png");
+}
 /* ---------- UI ---------- */
 
 function renderMedia({ mediaUrl, mimetype }) {
