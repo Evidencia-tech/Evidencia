@@ -173,7 +173,7 @@ const h = Math.round(img.height * scaleImg);
 // 1) Charger le logo
 let logoImg = null;
 try {
-  logoImg = await loadImage("/public/og-evidencia.png"); 
+  logoImg = await loadImage("/public/logoDTR.PNG"); 
 } catch (e) {
   logoImg = null; // si le logo ne charge pas, on affiche juste le texte
 }
