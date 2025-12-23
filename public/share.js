@@ -157,40 +157,74 @@ async function captureVideoFrameToDataUrl(videoUrl) {
 async function generateBadgedPng({ baseImageSrc, qrSrc, proofShortId }) {
   const img = await loadImage(baseImageSrc);
 
-  const maxW = 1400;
-  const scale = Math.min(1, maxW / img.width);
-  const w = Math.round(img.width * scale);
-  const h = Math.round(img.height * scale);
-
+  const maxW = 2800; // 2400 à 3200 selon perf
+const scaleImg = Math.min(1, maxW / img.width);
+const w = Math.round(img.width * scaleImg);
+const h = Math.round(img.height * scaleImg);
+  
   const canvas = document.createElement("canvas");
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d");
   ctx.drawImage(img, 0, 0, w, h);
 
-  const pad = Math.round(18 * scale + 8);
-  const boxW = Math.round(360 * scale);
-  const boxH = Math.round(120 * scale);
-  const x = w - boxW - pad;
-  const y = h - boxH - pad;
+// ===== BADGE CERTIFIÉ ÉVIDENCIA (AVEC LOGO) =====
+
+// 1) Charger le logo
+let logoImg = null;
+try {
+  logoImg = await loadImage("/public/Logo.png"); 
+} catch (e) {
+  logoImg = null; // si le logo ne charge pas, on affiche juste le texte
+}
+
+// 2) Dimensions badge (proportionnelles à l’image)
+const pad = Math.round(w * 0.02);
+const boxW = Math.round(w * 0.42);
+const boxH = Math.round(boxW * 0.32);
+const x = w - boxW - pad;
+const y = h - boxH - pad;
+
+// 3) Fond badge
+ctx.save();
+ctx.globalAlpha = 0.94;
+ctx.fillStyle = "#0b1220";
+roundRect(ctx, x, y, boxW, boxH, Math.round(boxH * 0.18));
+ctx.fill();
+ctx.restore();
+
+// 4) Dessiner le logo dans le badge
+const innerPad = Math.round(boxW * 0.06);
+let textLeft = x + innerPad;
+
+if (logoImg) {
+  const logoSize = Math.round(boxH * 0.70); // logo bien visible
+  const lx = x + innerPad;
+  const ly = y + Math.round((boxH - logoSize) / 2);
 
   ctx.save();
-  ctx.globalAlpha = 0.92;
-  ctx.fillStyle = "#0b1220";
-  roundRect(ctx, x, y, boxW, boxH, Math.round(18 * scale));
-  ctx.fill();
+  ctx.globalAlpha = 0.98;
+  ctx.drawImage(logoImg, lx, ly, logoSize, logoSize);
   ctx.restore();
 
-  ctx.fillStyle = "#ffffff";
-  ctx.font = `${Math.round(20 * scale)}px Inter, Arial, sans-serif`;
-  ctx.fillText("CERTIFIÉ", x + Math.round(16 * scale), y + Math.round(34 * scale));
+  // Texte à droite du logo
+  textLeft = lx + logoSize + Math.round(boxW * 0.04);
+}
 
-  ctx.font = `800 ${Math.round(26 * scale)}px Inter, Arial, sans-serif`;
-  ctx.fillText("ÉVIDENCIA", x + Math.round(16 * scale), y + Math.round(64 * scale));
+// 5) Texte (sans "ÉVIDENCIA")
+const t1 = Math.round(boxH * 0.26); // CERTIFIÉ
+const t3 = Math.round(boxH * 0.20); // ID
 
-  ctx.font = `${Math.round(16 * scale)}px ui-monospace, Menlo, monospace`;
-  ctx.fillStyle = "#cbd5e1";
-  ctx.fillText(`ID: ${proofShortId}`, x + Math.round(16 * scale), y + Math.round(92 * scale));
+const line1 = y + Math.round(boxH * 0.42);
+const line3 = y + Math.round(boxH * 0.78);
+
+ctx.fillStyle = "#ffffff";
+ctx.font = `700 ${t1}px Inter, Arial, sans-serif`;
+ctx.fillText("CERTIFIÉ", textLeft, line1);
+
+ctx.fillStyle = "#cbd5e1";
+ctx.font = `${t3}px ui-monospace, Menlo, monospace`;
+ctx.fillText(`ID: ${proofShortId}`, textLeft, line3);
 
   if (qrSrc) {
     try {
