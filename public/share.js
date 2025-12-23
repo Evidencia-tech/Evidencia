@@ -400,3 +400,42 @@ async function main() {
     downloadBlob(out, `evidencia_pack_${shortenId(id)}.zip`);
   });
 }
+// ===============================
+// MODAL "INFOS PACK"
+// ===============================
+
+(function () {
+  const modal = document.getElementById("packInfoModal");
+  const infoBtn = document.getElementById("packInfoBtn");
+  const closeBtn = document.getElementById("packInfoCloseBtn");
+  const okBtn = document.getElementById("packInfoOkBtn");
+
+  if (!modal || !infoBtn) {
+    console.warn("Modal Infos: éléments manquants");
+    return;
+  }
+
+  const openModal = () => {
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+  };
+
+  const closeModal = () => {
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+  };
+
+  infoBtn.addEventListener("click", openModal);
+  closeBtn && closeBtn.addEventListener("click", closeModal);
+  okBtn && okBtn.addEventListener("click", closeModal);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target && e.target.dataset && e.target.dataset.close) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
+})();
