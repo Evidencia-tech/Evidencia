@@ -50,7 +50,17 @@
       gap:10px;
       flex-wrap:wrap;
     }
+.share {
+  background: #ffffff;
+  color: #2563eb; /* bleu Evidencia */
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  font-weight: 800;
+}
 
+.share:hover {
+  background: #f9fafb;
+  border-color: #2563eb;
+}
     button{
       appearance:none;
       border:none;
@@ -246,7 +256,7 @@
           <p>Copier ou partager le lien de vérification.</p>
           <div class="row">
             <button class="primary" id="copyLinkBtn">Copier le lien</button>
-            <button class="ghost" id="nativeShareBtn">Partager</button>
+           <button class="share" id="nativeShareBtn">Partager</button>
           </div>
         </div>
 
