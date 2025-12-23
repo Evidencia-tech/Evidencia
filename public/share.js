@@ -226,6 +226,26 @@ ctx.fillStyle = "#cbd5e1";
 ctx.font = `${t3}px ui-monospace, Menlo, monospace`;
 ctx.fillText(`ID: ${proofShortId}`, textLeft, line3);
 
+  // ===== QR CODE À DROITE DU BADGE =====
+let qrImg = null;
+try {
+  qrImg = await loadImage(qrSrc);
+} catch (e) {
+  qrImg = null;
+}
+
+if (qrImg) {
+  const innerPad = Math.round(boxW * 0.06);
+  const qrSize = Math.round(boxH * 0.78); // GROS QR
+  const qx = x + boxW - innerPad - qrSize;
+  const qy = y + Math.round((boxH - qrSize) / 2);
+
+  ctx.save();
+  ctx.globalAlpha = 1;
+  ctx.drawImage(qrImg, qx, qy, qrSize, qrSize);
+  ctx.restore();
+}
+
   if (qrSrc) {
     try {
       const qr = await loadImage(qrSrc);
