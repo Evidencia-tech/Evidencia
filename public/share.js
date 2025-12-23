@@ -246,21 +246,6 @@ if (qrImg) {
   ctx.restore();
 }
 
-  if (qrSrc) {
-    try {
-      const qr = await loadImage(qrSrc);
-      const q = Math.round(86 * scale);
-      ctx.save();
-      ctx.globalAlpha = 0.98;
-      ctx.fillStyle = "#ffffff";
-      const qx = x + boxW - q - Math.round(14 * scale);
-      const qy = y + Math.round(18 * scale);
-      roundRect(ctx, qx - Math.round(6 * scale), qy - Math.round(6 * scale), q + Math.round(12 * scale), q + Math.round(12 * scale), Math.round(12 * scale));
-      ctx.fill();
-      ctx.drawImage(qr, qx, qy, q, q);
-      ctx.restore();
-    } catch (e) {}
-  }
 
   return canvas.toDataURL("image/png");
 }
