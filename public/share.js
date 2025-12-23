@@ -198,7 +198,7 @@ const innerPad = Math.round(boxW * 0.06);
 let textLeft = x + innerPad;
 
 if (logoImg) {
-  const logoSize = Math.round(boxH * 0.70); // logo bien visible
+  const logoSize = Math.round(boxH * 0.8); // logo bien visible
   const lx = x + innerPad;
   const ly = y + Math.round((boxH - logoSize) / 2);
 
@@ -246,7 +246,6 @@ if (qrImg) {
   ctx.restore();
 }
 
-
   return canvas.toDataURL("image/png");
 }
 
@@ -275,9 +274,10 @@ async function main() {
   if (!id) return alert("ID de preuve manquant.");
 
   $("backBtn").addEventListener("click", () => history.back());
-
+  
+setupPackInfoModal();
+  
   const data = await fetchVerify(id);
-
   const mediaUrl = normalizeUrl(data.mediaUrl || "");
   const qrSrc = data.qrUrl || data.qr || "";
   const verifyUrl = `${window.location.origin}/public/verify.html?id=${encodeURIComponent(id)}`;
@@ -388,8 +388,7 @@ async function main() {
 // ===============================
 // MODAL "INFOS PACK"
 // ===============================
-
-(function () {
+function setupPackInfoModal() {
   const modal = document.getElementById("packInfoModal");
   const infoBtn = document.getElementById("packInfoBtn");
   const closeBtn = document.getElementById("packInfoCloseBtn");
@@ -403,24 +402,29 @@ async function main() {
   const openModal = () => {
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
   };
 
   const closeModal = () => {
     modal.classList.remove("is-open");
     modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
   };
 
-  infoBtn.addEventListener("click", openModal);
+  infoBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    openModal();
+  });
+
   closeBtn && closeBtn.addEventListener("click", closeModal);
   okBtn && okBtn.addEventListener("click", closeModal);
 
   modal.addEventListener("click", (e) => {
-    if (e.target && e.target.dataset && e.target.dataset.close) {
-      closeModal();
-    }
+    if (e.target?.dataset?.close) closeModal();
   });
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
   });
-})();
+}
+
